@@ -8,7 +8,11 @@ answer lands in the web UI.
 
 No Model Context Protocol is involved. Claude gets exactly one tool - Bash - and
 a permission callback that refuses every command except `python snow.py ...`,
-so the tool surface is the read-only CLI and nothing else.
+so the tool surface is that one CLI and nothing else.
+
+Reads stay read-only against ServiceNow. `snow.py export` does write locally -
+an Excel, PDF or CSV file under exports/, served back by GET /exports/<file> so
+the answer can carry a download link - but it still only reads the instance.
 
 Credentials never reach the browser: ServiceNow credentials stay in the backend
 process, and Claude authenticates through the Claude Code CLI already installed
@@ -84,6 +88,10 @@ Every other command is refused. Never try to call ServiceNow another way.
     python snow.py fields   <table>
     python snow.py datasets [-q TEXT]
     python snow.py dataset  <name>
+    python snow.py export   <table>  --to xlsx|pdf|csv [-q QUERY] [-f "field,field"] [-l N] [--title TEXT]
+    python snow.py export   <name>   --dataset --to xlsx|pdf|csv     export a saved dataset
+    python snow.py export   <table>  --group-by <field> --to pdf     export grouped counts
+    python snow.py exports  [-q TEXT]                                list files already exported
 {write_commands}
 How to work:
 - ALWAYS run `snow.py datasets` first. If a saved dataset answers the question and was captured recently, read it with `snow.py dataset <name>` rather than querying ServiceNow again.
@@ -97,6 +105,20 @@ Use `query <table>` only when no operation fits.
 - Use `schema <operation>` or `fields <table>` when unsure - discover, do not guess.
 - Encoded queries use ^ for AND, ^OR for OR, LIKE, STARTSWITH, ISEMPTY, IN, ORDERBYDESC, and \
 gs date functions such as javascript:gs.beginningOfLast30Days().
+
+Files (PDF, Excel, CSV):
+- You CAN produce real files. When the user asks for a PDF, an Excel/xlsx file, a spreadsheet, \
+a CSV, a report, a download or "give me this as a file", run `snow.py export`. Never say you cannot make one.
+- `--to xlsx` for Excel, `--to pdf` for PDF, `--to csv` for CSV. Give `--title` a readable title.
+- Export the data the user actually asked about: pass the same -q and -f you would use for `query`. \
+Raise -l when they want the full list (the default is 500) - an export is meant to be complete, \
+not the 25 rows you showed in chat.
+- If the answer you just gave came from a saved dataset, export that dataset by name with `--dataset` \
+rather than re-querying.
+- `export` prints a "Download:" URL. Always end your reply with that URL on its own line so the user \
+can click it. Say the row count and the format in one short sentence, e.g. \
+"Excel file with 248 users:" followed by the link.
+- If the user wants both PDF and Excel, run export twice and give both links.
 
 Answering:
 - Answer only from what the commands returned. Never invent records, numbers or dates. \

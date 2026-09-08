@@ -35,6 +35,14 @@ and try again. Do not attempt to query ServiceNow another way.
     python snow.py datasets [-q TEXT]        list what has already been collected
     python snow.py dataset  <name>           read one saved dataset
 
+Files (Excel / PDF / CSV):
+
+    python snow.py export <table> --to xlsx|pdf|csv [-q QUERY] [-f "field,field"] [-l N]
+                                  [--offset N] [--group-by FIELD] [--title TEXT] [--name FILE]
+    python snow.py export <name>  --dataset --to pdf        export a saved dataset
+    python snow.py export <op>    --call -p name=value      export an operation's result
+    python snow.py exports [-q TEXT]                        list what has been exported
+
 Writing (needs SNOW_ALLOW_WRITE=1):
 
     python snow.py do     <operation> [-d name=value ...]      e.g. create_incident
@@ -67,6 +75,12 @@ Writing (needs SNOW_ALLOW_WRITE=1):
    tally them yourself.
 6. **Answer from the data.** Cite record numbers (INC0015571). Never invent
    records, numbers or dates; if a lookup returns nothing, say so.
+7. **When a file is asked for, use `export`.** PDF, Excel/xlsx, spreadsheet, CSV,
+   "report" or "download" all mean `snow.py export`. Pass the same `-q` / `-f` you
+   would use for `query`, and raise `-l` (default 500) so the file is the complete
+   list rather than the handful of rows shown in chat. Files land in `exports/`
+   and the command prints a `Download:` URL served by the backend; give the user
+   that URL. Nothing is written to ServiceNow, so this needs no write access.
 
 ## Examples
 
@@ -77,6 +91,10 @@ Writing (needs SNOW_ALLOW_WRITE=1):
     python snow.py stats incident priority -q "active=true"
     python snow.py stats incident assignment_group -q "active=true"
     python snow.py query sys_user_group -f "name,description" -l 10 --format csv
+    python snow.py export sys_user -f "user_name,name,email,department" -l 1000 --to xlsx
+    python snow.py export incident -q "active=true" -f "number,short_description,priority" \
+        --to pdf --title "Open incidents"
+    python snow.py export incident --group-by priority -q "active=true" --to pdf
 
 ## Encoded query syntax (for -q on count / query)
 
@@ -127,10 +145,21 @@ set. Tell the user how to enable it rather than trying to set it yourself:
 
 ## Repository layout
 
-- `snow.py` — the read-only CLI (this is what you run)
+- `snow.py` — the CLI (this is what you run)
+- `snow_export.py` — the Excel / PDF / CSV writers used by `snow.py export`
+- `exports/` — generated files, served at `http://127.0.0.1:8095/exports/<file>`
+- `mcp_server.py` — MCP adapter for Claude Desktop; each tool shells out to
+  `snow.py`. Not used by Claude Code — keep using the CLI here.
+- `CLAUDE_DESKTOP.md` — how to set that up
 - `servicenow-mcp/` — the REST API backend; `scripts/rest_api.py` is the server
 - `servicenow-mcp/docs/rest_api.md` — every operation, generated from the code
 - `Frontend/` — the React chat UI that calls the same REST API
 
-There is no Model Context Protocol anywhere in this project, despite the
-`servicenow-mcp` folder name. Everything is plain REST.
+The `servicenow-mcp` folder name is misleading: there is no Model Context
+Protocol in the backend, the CLI or the web UI. All of that is plain REST.
+
+The one exception is `mcp_server.py` at the root, which exists only so Claude
+Desktop can reach this project — MCP is the only way that app talks to outside
+tools. It is a thin adapter that runs `snow.py` for each tool call, not a second
+implementation. Nothing else in the stack uses it, and you should not use it
+from Claude Code: run `snow.py` directly as described above.

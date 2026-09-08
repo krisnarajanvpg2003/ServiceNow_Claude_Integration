@@ -695,6 +695,134 @@ def cmd_delete(args):
     print("delete of %s/%s succeeded." % (args.table, args.sys_id))
 
 
+# ----- exporting to a file (Excel / PDF / CSV) ---------------------------
+
+EXPORTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "exports")
+
+EXTENSIONS = {"xlsx": "xlsx", "excel": "xlsx", "pdf": "pdf", "csv": "csv"}
+
+
+def rows_from_dataset(name):
+    """(rows, captured, command) read back out of a saved dataset's markdown table."""
+    path = os.path.join(DATASETS, name + ".md")
+    if not os.path.exists(path):
+        sys.exit("error: no dataset called %r. Run 'python snow.py datasets' to list them."
+                 % name)
+    meta = read_frontmatter(path)
+    table = []
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if line.startswith("|") and line.endswith("|"):
+                table.append([c.strip().replace("\\|", "|") for c in line[1:-1].split("|")])
+    if len(table) < 2:
+        sys.exit("error: dataset %r holds no table of records, so there is nothing to export."
+                 % name)
+    header = table[0]
+    rows = [dict(zip(header, cells)) for cells in table[2:]]  # table[1] is the --- rule
+    return rows, meta.get("captured", ""), meta.get("command", "")
+
+
+def download_url(filename):
+    return "%s/exports/%s" % (base_url(), urllib.parse.quote(filename))
+
+
+def cmd_export(args):
+    """Write a query, an operation's result or a saved dataset to a file."""
+    import snow_export
+
+    fmt = EXTENSIONS.get(args.to.lower())
+    if not fmt:
+        sys.exit("error: --to must be one of xlsx, pdf, csv")
+
+    columns = [c.strip() for c in args.fields.split(",") if c.strip()] or None
+    source = ""
+
+    if args.dataset:
+        rows, captured, command = rows_from_dataset(args.source)
+        title = args.title or args.source.replace("-", " ").title()
+        source = "dataset '%s'%s" % (args.source, (" captured %s" % captured) if captured else "")
+        if command:
+            source += " - %s" % command
+    elif args.call:
+        params = parse_pairs(args.param)
+        if "limit" not in params:
+            params["limit"] = str(args.limit)
+        data = get_json("/tools/%s/call" % urllib.parse.quote(args.source), params)
+        result = data.get("result", data)
+        if not data.get("ok", True):
+            message = result.get("message") if isinstance(result, dict) else str(result)
+            sys.exit("error: %s" % message)
+        rows = rows_of(result)
+        title = args.title or args.source.replace("_", " ").title()
+        source = "operation %s" % args.source
+    elif args.group_by:
+        data = get_json("/stats/" + urllib.parse.quote(args.source),
+                        {"q": args.query, "group_by": args.group_by})
+        if not data.get("ok"):
+            sys.exit("error: %s" % str(data.get("error"))[:300])
+        rows = data.get("groups", [])
+        columns = columns or [args.group_by, "count"]
+        title = args.title or "%s by %s" % (args.source, args.group_by)
+        source = "%s grouped by %s%s" % (args.source, args.group_by,
+                                         (" where %s" % args.query) if args.query else "")
+    else:
+        data = get_json("/table/" + urllib.parse.quote(args.source),
+                        {"q": args.query, "fields": args.fields,
+                         "limit": str(args.limit), "offset": str(args.offset)})
+        if not data.get("ok"):
+            sys.exit("error: %s" % json.dumps(data.get("result"))[:300])
+        rows = data.get("result") or []
+        title = args.title or args.source.replace("_", " ").title()
+        source = args.source + ((" where %s" % args.query) if args.query else " (all records)")
+
+    if not rows:
+        sys.exit("error: nothing matched, so no file was written.")
+
+    rows = [{k: flat(v) for k, v in r.items()} for r in rows]
+    # A timestamp in the name keeps two exports of the same query side by side.
+    when = __import__("datetime").datetime.now().strftime("%Y%m%d-%H%M")
+    name = args.name or slugify([title, when])
+    filename = "%s.%s" % (name, fmt)
+    path = os.path.join(EXPORTS, filename)
+
+    subtitle = "%s | %d records | exported %s" % (source, len(rows), snow_export.stamp())
+    written, cols, count = snow_export.write(path, fmt, rows, columns, title, subtitle)
+
+    size = os.path.getsize(written)
+    print("Wrote %s" % os.path.relpath(written, os.path.dirname(os.path.abspath(__file__))))
+    print("%d row(s) x %d column(s), %.1f KB" % (count, len(cols), size / 1024.0))
+    print("Columns: %s" % ", ".join(cols))
+    if fmt == "pdf" and len(cols) > 12:
+        print("Note: %d columns is a lot for one page, so values are clipped to fit."
+              " Narrow it with -f, or use --to xlsx." % len(cols))
+    print("Download: %s" % download_url(filename))
+
+
+def cmd_exports(args):
+    """List the files already written to exports/."""
+    if not os.path.isdir(EXPORTS):
+        print("No exports yet. Create one with 'python snow.py export <table> --to xlsx'.")
+        return
+    files = sorted(
+        (f for f in os.listdir(EXPORTS) if f.rsplit(".", 1)[-1] in ("xlsx", "pdf", "csv")),
+        key=lambda f: os.path.getmtime(os.path.join(EXPORTS, f)),
+        reverse=True,
+    )
+    if args.query:
+        files = [f for f in files if args.query.lower() in f.lower()]
+    if not files:
+        print("(no exports matched)")
+        return
+    for f in files[:40]:
+        full = os.path.join(EXPORTS, f)
+        when = __import__("datetime").datetime.fromtimestamp(
+            os.path.getmtime(full)).strftime("%Y-%m-%d %H:%M")
+        print("%-52s %8.1f KB  %s" % (f, os.path.getsize(full) / 1024.0, when))
+        print("    %s" % download_url(f))
+    print("\n%d file(s)." % len(files))
+
+
 def main():
     p = argparse.ArgumentParser(
         prog="snow.py", description="Client for the local ServiceNow REST API (read-only by default)."
@@ -761,6 +889,26 @@ def main():
     q.add_argument("--format", choices=["table", "csv", "json"], default="table")
     q.add_argument("--no-save", action="store_true", help="do not cache this result")
     q.set_defaults(func=cmd_query)
+
+    e = sub.add_parser("export", help="write records to an Excel, PDF or CSV file")
+    e.add_argument("source", help="table name, or an operation/dataset name with --call/--dataset")
+    e.add_argument("--to", default="xlsx", help="xlsx (Excel), pdf or csv")
+    e.add_argument("-q", "--query", default="", help="encoded query, as for 'query'")
+    e.add_argument("-f", "--fields", default="", help="comma separated field names")
+    e.add_argument("-l", "--limit", type=int, default=500, help="max records (default 500)")
+    e.add_argument("--offset", type=int, default=0)
+    e.add_argument("--group-by", default="", help="export grouped counts instead of records")
+    e.add_argument("--dataset", action="store_true", help="source is a saved dataset name")
+    e.add_argument("--call", action="store_true", help="source is an operation name")
+    e.add_argument("-p", "--param", action="append", metavar="NAME=VALUE",
+                   help="parameter for --call")
+    e.add_argument("--title", default="", help="document title")
+    e.add_argument("--name", default="", help="output file name, without extension")
+    e.set_defaults(func=cmd_export)
+
+    ex = sub.add_parser("exports", help="list files already exported")
+    ex.add_argument("-q", "--query", default="", help="filter by file name")
+    ex.set_defaults(func=cmd_exports)
 
     f = sub.add_parser("fields", help="columns of a table, from sys_dictionary")
     f.add_argument("table")

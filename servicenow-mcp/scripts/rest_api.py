@@ -43,6 +43,7 @@ import os
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote
 
 import requests
 import uvicorn
@@ -51,7 +52,7 @@ from pydantic import ValidationError
 from starlette.applications import Starlette
 from starlette.concurrency import run_in_threadpool
 from starlette.requests import Request
-from starlette.responses import JSONResponse, StreamingResponse
+from starlette.responses import FileResponse, JSONResponse, StreamingResponse
 from starlette.routing import Route
 
 from servicenow_mcp.chat_agent import ChatAgent, strip_claude_code_env
@@ -67,6 +68,14 @@ ROOT = Path(__file__).resolve().parent.parent
 logger = logging.getLogger("rest_api")
 
 DEFAULT_RECOMMENDATION_TYPES = "inactive_items,low_usage,description_quality"
+
+# Files written by `snow.py export`, served back for download by /exports.
+EXPORTS = ROOT.parent / "exports"
+EXPORT_TYPES = {
+    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".pdf": "application/pdf",
+    ".csv": "text/csv",
+}
 
 # Friendly ?sort= aliases for /incidents -> ServiceNow field names.
 INCIDENT_SORTS = {
@@ -537,6 +546,44 @@ def create_app(registry: ServiceNowRegistry, agent: "ChatAgent | None" = None) -
         count = int(payload.get("stats", {}).get("count", 0))
         return JSONResponse({"ok": True, "table": table, "query": qp.get("q", ""), "count": count})
 
+    # ----- exported files -------------------------------------------------
+
+    async def export_list(request: Request) -> JSONResponse:
+        """The Excel/PDF/CSV files `snow.py export` has written, newest first."""
+        base = str(request.base_url).rstrip("/")
+        files = []
+        if EXPORTS.is_dir():
+            for path in EXPORTS.iterdir():
+                if path.is_file() and path.suffix.lower() in EXPORT_TYPES:
+                    stat = path.stat()
+                    files.append({
+                        "name": path.name,
+                        "format": path.suffix.lstrip("."),
+                        "bytes": stat.st_size,
+                        "modified": int(stat.st_mtime),
+                        "url": f"{base}/exports/{quote(path.name)}",
+                    })
+        files.sort(key=lambda f: f["modified"], reverse=True)
+        return JSONResponse({"ok": True, "count": len(files), "exports": files})
+
+    async def export_download(request: Request) -> Any:
+        """Serve one exported file as a download."""
+        name = request.path_params["filename"]
+        # Resolve inside EXPORTS so a crafted name cannot escape the folder.
+        target = (EXPORTS / name).resolve()
+        try:
+            inside = target.is_relative_to(EXPORTS.resolve())
+        except AttributeError:  # Python < 3.9
+            inside = str(target).startswith(str(EXPORTS.resolve()))
+        if not inside or not target.is_file() or target.suffix.lower() not in EXPORT_TYPES:
+            return JSONResponse({"ok": False, "error": f"No export called {name!r}"}, 404)
+        return FileResponse(
+            target,
+            media_type=EXPORT_TYPES[target.suffix.lower()],
+            filename=target.name,
+            headers={"Content-Disposition": f'attachment; filename="{target.name}"'},
+        )
+
     # ----- natural-language chat ------------------------------------------
 
     async def chat_status(request: Request) -> JSONResponse:
@@ -579,6 +626,8 @@ def create_app(registry: ServiceNowRegistry, agent: "ChatAgent | None" = None) -
         routes=[
             Route("/", index),
             Route("/health", health),
+            Route("/exports", export_list, methods=["GET"]),
+            Route("/exports/{filename}", export_download, methods=["GET"]),
             # discovery + generic invocation (all tools)
             Route("/chat/status", chat_status, methods=["GET"]),
             Route("/chat", chat, methods=["POST"]),

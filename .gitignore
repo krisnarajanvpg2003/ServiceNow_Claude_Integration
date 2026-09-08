@@ -1,3 +1,6 @@
 datasets/
 servicenow-mcp/.env
 servicenow-mcp/.env.bak
+exports/
+__pycache__/
+.DS_Store

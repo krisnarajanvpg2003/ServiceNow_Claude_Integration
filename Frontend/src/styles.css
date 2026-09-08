@@ -1330,3 +1330,59 @@ code {
   color: var(--fg-dim);
   font-size: 12px;
 }
+
+/* Download chip for a file written by `snow.py export` */
+.file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  margin: 4px 0;
+  padding: 6px 8px 6px 6px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow);
+  color: var(--fg);
+  text-decoration: none;
+  vertical-align: middle;
+}
+.file-chip:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-hover);
+}
+.file-chip:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+.file-chip-ext {
+  flex: none;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: var(--bs-black);
+  color: var(--bs-yellow);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.file-chip-xlsx .file-chip-ext {
+  background: #1d6f42;
+  color: #ffffff;
+}
+.file-chip-pdf .file-chip-ext {
+  background: var(--bs-orange-dark);
+  color: #ffffff;
+}
+.file-chip-name {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.file-chip-action {
+  flex: none;
+  color: var(--link);
+  font-size: 12px;
+  font-weight: 600;
+}

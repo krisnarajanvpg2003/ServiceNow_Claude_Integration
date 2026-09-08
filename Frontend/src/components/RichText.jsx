@@ -1,5 +1,8 @@
 // Small renderer for assistant prose: paragraphs, "- " bullets, "1." numbered
-// lists, "#" headings, **bold** and `code`. Deliberately not a full Markdown engine.
+// lists, "#" headings, **bold**, `code` and links. Deliberately not a full
+// Markdown engine.
+import { exportHref, exportLabel, isExportUrl } from '../lib/exports.js'
+
 export default function RichText({ text }) {
   if (!text) return null
   const blocks = []
@@ -42,10 +45,35 @@ export default function RichText({ text }) {
   )
 }
 
+// **bold**, `code`, and bare http(s) URLs. A trailing . , ) etc. is sentence
+// punctuation rather than part of the link, so it is left outside the anchor.
+const INLINE = /(\*\*[^*]+\*\*|`[^`]+`|https?:\/\/[^\s<>()"]+[^\s<>()".,;:!?])/g
+
 function inline(s) {
-  return s.split(/(\*\*[^*]+\*\*|`[^`]+`)/g).map((part, i) => {
+  return s.split(INLINE).map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) return <strong key={i}>{part.slice(2, -2)}</strong>
     if (part.startsWith('`') && part.endsWith('`')) return <code key={i}>{part.slice(1, -1)}</code>
+    if (/^https?:\/\//.test(part)) return link(part, i)
     return part
   })
+}
+
+function link(url, key) {
+  // An exported file gets a download chip, and is routed through this origin's
+  // /api proxy so it also works when the UI is shared over a tunnel.
+  if (isExportUrl(url)) {
+    const { name, format } = exportLabel(url)
+    return (
+      <a key={key} className={`file-chip file-chip-${format}`} href={exportHref(url)} download={name}>
+        <span className="file-chip-ext">{format}</span>
+        <span className="file-chip-name">{name}</span>
+        <span className="file-chip-action">Download</span>
+      </a>
+    )
+  }
+  return (
+    <a key={key} href={url} target="_blank" rel="noopener noreferrer">
+      {url}
+    </a>
+  )
 }
