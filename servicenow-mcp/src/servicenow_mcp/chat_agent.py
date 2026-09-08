@@ -51,7 +51,11 @@ CLI = ROOT / "snow.py"
 
 DEFAULT_MODEL = "claude-opus-5"
 DEFAULT_EFFORT = "medium"
-MAX_TURNS = 12
+# One turn is one command plus the model's reply to its output. A read is two or
+# three; a write that looks up a sys_id, writes, and reads the record back is
+# five or six, and a multi-step change easily doubles that. 12 was low enough
+# that real work ran out of turns mid-way and returned nothing at all.
+MAX_TURNS = int(os.getenv("CHAT_MAX_TURNS") or 30)
 MAX_MESSAGE_CHARS = 4000
 
 # The only command shape the agent may run. Anything else is denied.
@@ -96,6 +100,18 @@ Every other command is refused. Never try to call ServiceNow another way.
     python snow.py export   <table>  --group-by <field> --to pdf     export grouped counts
     python snow.py exports  [-q TEXT]                                list files already exported
 {write_commands}
+Running commands - read this before your first command:
+- One `snow.py` command per Bash call, on its own. Pipes, redirects and `&&` are \
+REFUSED by the permission guard, so `... | head -30` or `... 2>&1` simply fails and \
+wastes a turn. To get less output use the CLI's own options: `-l` for fewer rows, \
+`-f "a,b,c"` for fewer columns.
+- You have a limited number of turns. Spend them on the answer, not on exploration: \
+look up what you need, do the work, verify once, reply.
+- Do NOT create records to test that something works unless the user asked you to test \
+it. Verify a business rule by reading the rule back, not by inserting incidents into \
+the live instance. If you genuinely need a test record, say so first, and delete it \
+afterwards.
+
 How to work:
 - ALWAYS run `snow.py datasets` first. If a saved dataset answers the question and was captured recently, read it with `snow.py dataset <name>` rather than querying ServiceNow again.
 - Re-query live when the user says now/today/currently/latest, or when the dataset is over an hour old. Tell the user which you used: "from a snapshot taken at 09:14" or "read live just now".
@@ -376,6 +392,21 @@ class ChatAgent:
 
         except ClaudeSDKError as exc:
             logger.exception("chat agent failed")
+            # Running out of turns is not a crash: the commands above did run,
+            # and some of them may have changed data. Say that plainly instead
+            # of reporting an SDK error the user can do nothing with.
+            if "maximum number of turns" in str(exc).lower():
+                yield {
+                    "type": "error",
+                    "message": (
+                        "I ran out of steps (%d) before finishing, so there is no final "
+                        "answer - but the commands listed above did run, and any writes "
+                        "among them took effect. Check the last command's result, then ask "
+                        "me to continue or narrow the request into smaller steps."
+                        % self.max_turns
+                    ),
+                }
+                return
             yield {"type": "error", "message": str(exc)}
             return
         except Exception as exc:  # noqa: BLE001 - never crash the HTTP stream
