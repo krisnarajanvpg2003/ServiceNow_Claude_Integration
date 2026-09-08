@@ -1,0 +1,17 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1440, "h": 900, "title": "A · Refined chat" },
+    { "file": "SplitView.dc.html", "x": 1560, "y": 0, "w": 1440, "h": 900, "title": "B · Split view" },
+    { "file": "Dashboard.dc.html", "x": 0, "y": 1080, "w": 1440, "h": 900, "title": "C · Dashboard first" },
+    { "file": "Focused.dc.html", "x": 1560, "y": 1080, "w": 1440, "h": 900, "title": "D · Command palette" },
+    { "file": "Components.dc.html", "x": 3120, "y": 0, "w": 1040, "h": 1180, "title": "Components close-up" }
+  ],
+  "annotations": [
+    { "id": "brief", "x": 0, "y": -220, "w": 620, "text": "ServiceNow Assistant — four directions\n\nSame brand: Segoe UI, black bar with the yellow rule, cream ground, 12px radii, existing badge tones. Pick one and I'll build it.\n\nAll four fix the table overflow the same way: fixed layout, category under the description, dates split over two lines." },
+    { "id": "note-a", "x": 0, "y": -110, "w": 620, "text": "A · Refined chat — smallest change. Keeps the layout you have; adds a result card around the data, one segmented Keyword/Claude control, and a table that never scrolls sideways. Tradeoff: data still scrolls away in a long conversation." },
+    { "id": "note-b", "x": 1560, "y": -110, "w": 620, "text": "B · Split view — talk on the left, data pinned on the right with tabs. Nothing gets buried; the sidebar collapses to a rail to pay for the width. Tradeoff: the conversation column gets narrow, and it needs a mobile fallback." },
+    { "id": "note-c", "x": 0, "y": 970, "w": 620, "text": "C · Dashboard first — the priority breakdown is always on screen, the assistant is a docked panel that filters it. Best for 'how many by priority'. Tradeoff: biggest build, and it leads with numbers rather than conversation." },
+    { "id": "note-d", "x": 1560, "y": 970, "w": 620, "text": "D · Command palette — dark, keyboard-driven, results as full-width cards so there is no table to overflow at all. Tradeoff: least familiar, and long records need a detail view to open into." }
+  ],
+  "launch": { "view": "canvas" }
+}

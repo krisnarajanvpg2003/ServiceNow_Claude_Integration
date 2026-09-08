@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    a { color: #b33a0c; text-decoration: none; }
+    a:hover { color: #8f2e09; }
+    .mono { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; }
+    .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #6b6660; font-weight: 700; }
+  </style>
+</helmet>
+
+<div style="width: 1040px; height: 1180px; background: #faf8f4; color: #1f1f1f; padding: 28px; display: flex; flex-direction: column; gap: 26px; overflow: hidden;">
+
+  <div>
+    <div style="font-size: 20px; font-weight: 700; letter-spacing: -0.3px;">Components</div>
+    <div style="font-size: 13px; color: #6b6660;">Badge scale, table density and the incident detail card &mdash; judge these before picking a direction.</div>
+  </div>
+
+  <!-- Badges -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="lbl">Priority &amp; state badges</div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+      <span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #fff1ea; color: #b33a0c; border: 1px solid #fbc7b0;">1 &middot; Critical</span>
+      <span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #fff1ea; color: #b33a0c; border: 1px solid #fbc7b0;">2 &middot; High</span>
+      <span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #fff4da; color: #9a5b00; border: 1px solid #f3d9a0;">3 &middot; Moderate</span>
+      <span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #f1eee9; color: #6b6660; border: 1px solid #e7e3dc;">4 &middot; Low</span>
+      <span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #f1eee9; color: #6b6660; border: 1px solid #e7e3dc;">5 &middot; Planning</span>
+      <span style="width: 1px; height: 22px; background: #e7e3dc;"></span>
+      <span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #e6f5ee; color: #1e7a54; border: 1px solid #a9dcc4;">New</span>
+      <span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #fff4da; color: #9a5b00; border: 1px solid #f3d9a0;">In Progress</span>
+      <span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #f1eee9; color: #6b6660; border: 1px solid #e7e3dc;">Closed</span>
+    </div>
+    <div style="font-size: 12.5px; color: #6b6660;">Critical and High deliberately share one red &mdash; severity reads as a group, and the number carries the rank.</div>
+  </div>
+
+  <!-- Table -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="lbl">Incident table &mdash; fixed layout, nothing scrolls sideways</div>
+    <div style="border: 1px solid #e7e3dc; border-radius: 12px; background: #ffffff; overflow: hidden; box-shadow: 0 6px 18px rgba(31,31,31,0.05);">
+      <table style="width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left; table-layout: fixed;">
+        <thead>
+          <tr>
+            <th style="width: 116px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; padding: 10px 14px; border-bottom: 1px solid #e7e3dc; background: #f6f3ee;">Number</th>
+            <th style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; padding: 10px 14px; border-bottom: 1px solid #e7e3dc; background: #f6f3ee;">Short description</th>
+            <th style="width: 92px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; padding: 10px 14px; border-bottom: 1px solid #e7e3dc; background: #f6f3ee;">State</th>
+            <th style="width: 124px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; padding: 10px 14px; border-bottom: 1px solid #e7e3dc; background: #f6f3ee;">Priority</th>
+            <th style="width: 116px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; padding: 10px 14px; border-bottom: 1px solid #e7e3dc; background: #f6f3ee; text-align: right;">Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><a class="mono" style="font-size: 12.5px; font-weight: 700;">INC0015523</a></td>
+            <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Group of alerts, High levels of multicast or broadcast traffic<div style="font-size: 12px; color: #6b6660;">Inquiry / Help</div></td>
+            <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #f1eee9; color: #6b6660; border: 1px solid #e7e3dc;">Closed</span></td>
+            <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #fff1ea; color: #b33a0c; border: 1px solid #fbc7b0;">2 &middot; High</span></td>
+            <td class="mono" style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc; text-align: right; font-size: 12.5px; color: #6b6660;">2025-06-13<div>09:00:59</div></td>
+          </tr>
+          <tr>
+            <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><a class="mono" style="font-size: 12.5px; font-weight: 700;">INC0015262</a></td>
+            <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">svmlxtibk8ua301 SNMP Status, Current value : 0<div style="font-size: 12px; color: #6b6660;">Inquiry / Help</div></td>
+            <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #e6f5ee; color: #1e7a54; border: 1px solid #a9dcc4;">New</span></td>
+            <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #fff1ea; color: #b33a0c; border: 1px solid #fbc7b0;">1 &middot; Critical</span></td>
+            <td class="mono" style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc; text-align: right; font-size: 12.5px; color: #6b6660;">2025-01-13<div>05:11:00</div></td>
+          </tr>
+          <tr style="background: #fffdf6;">
+            <td style="padding: 11px 14px;"><a class="mono" style="font-size: 12.5px; font-weight: 700;">INC0015201</a></td>
+            <td style="padding: 11px 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">vmclxbuiws03 Agent not working<div style="font-size: 12px; color: #6b6660;">Inquiry / Help</div></td>
+            <td style="padding: 11px 14px;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #e6f5ee; color: #1e7a54; border: 1px solid #a9dcc4;">New</span></td>
+            <td style="padding: 11px 14px;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #fff1ea; color: #b33a0c; border: 1px solid #fbc7b0;">2 &middot; High</span></td>
+            <td class="mono" style="padding: 11px 14px; text-align: right; font-size: 12.5px; color: #6b6660;">2025-01-10<div>09:14:18</div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size: 12.5px; color: #6b6660;">Category moves under the description, the date splits over two lines and the description truncates &mdash; five columns fit any width. Last row shows the hover state.</div>
+  </div>
+
+  <!-- Detail card -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="lbl">Incident detail &mdash; grouped, not one long list</div>
+    <div style="border: 1px solid #e7e3dc; border-radius: 12px; background: #ffffff; box-shadow: 0 6px 18px rgba(31,31,31,0.05); overflow: hidden;">
+      <div style="padding: 16px 18px; display: flex; align-items: flex-start; gap: 14px; border-bottom: 1px solid #e7e3dc;">
+        <div style="flex: 1; min-width: 0;">
+          <div class="mono" style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: #6b6660;">INC0015262</div>
+          <div style="font-size: 18px; font-weight: 700; letter-spacing: -0.3px; margin-top: 2px;">svmlxtibk8ua301 SNMP Status, Current value : 0</div>
+        </div>
+        <div style="display: flex; gap: 6px; flex: 0 0 auto;">
+          <span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #e6f5ee; color: #1e7a54; border: 1px solid #a9dcc4;">New</span>
+          <span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #fff1ea; color: #b33a0c; border: 1px solid #fbc7b0;">1 &middot; Critical</span>
+        </div>
+      </div>
+
+      <div style="padding: 14px 18px; display: flex; flex-direction: column; gap: 6px;">
+        <div class="lbl">Details</div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+          <div><div style="font-size: 12px; color: #6b6660;">Caller</div><div style="font-size: 14px;">Event Management</div></div>
+          <div><div style="font-size: 12px; color: #6b6660;">Assigned to</div><div style="font-size: 14px; color: #6b6660;">Unassigned</div></div>
+          <div><div style="font-size: 12px; color: #6b6660;">Category</div><div style="font-size: 14px;">Inquiry / Help</div></div>
+          <div><div style="font-size: 12px; color: #6b6660;">Impact</div><div style="font-size: 14px;">1 &ndash; High</div></div>
+          <div><div style="font-size: 12px; color: #6b6660;">Urgency</div><div style="font-size: 14px;">1 &ndash; High</div></div>
+          <div><div style="font-size: 12px; color: #6b6660;">Channel</div><div style="font-size: 14px; color: #6b6660;">&mdash;</div></div>
+        </div>
+      </div>
+
+      <div style="padding: 14px 18px; border-top: 1px solid #e7e3dc; display: flex; flex-direction: column; gap: 6px;">
+        <div class="lbl">Timeline</div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+          <div><div style="font-size: 12px; color: #6b6660;">Opened</div><div class="mono" style="font-size: 13px;">2025-01-13 05:11:00</div></div>
+          <div><div style="font-size: 12px; color: #6b6660;">Updated</div><div class="mono" style="font-size: 13px;">2026-05-18 10:30:13</div></div>
+          <div><div style="font-size: 12px; color: #6b6660;">Resolved</div><div style="font-size: 14px; color: #6b6660;">&mdash;</div></div>
+        </div>
+      </div>
+
+      <div style="padding: 14px 18px; border-top: 1px solid #e7e3dc; display: flex; flex-direction: column; gap: 8px;">
+        <div class="lbl">Work notes</div>
+        <div style="font-size: 13px; padding: 10px 12px; background: #f6f3ee; border-radius: 8px;">
+          <span class="mono" style="color: #6b6660;">2025-01-13 05:11:00 &middot; System</span><br>
+          Alert correlated with 3 similar SNMP failures in the same subnet.
+        </div>
+      </div>
+
+      <div style="padding: 12px 18px; border-top: 1px solid #e7e3dc; background: #faf8f4; display: flex; align-items: center; gap: 12px;">
+        <span class="mono" style="font-size: 12px; color: #6b6660;">0ee3e81c2bd62a50f37dfb9ad391bfa9</span>
+        <span style="margin-left: auto; font-size: 12.5px; font-weight: 600; color: #b33a0c;">Show all 109 fields</span>
+      </div>
+    </div>
+    <div style="font-size: 12.5px; color: #6b6660;">Empty fields collapse to an em dash rather than "None"; the full 109-field record stays one click away.</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

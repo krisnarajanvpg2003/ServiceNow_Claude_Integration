@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    a { color: #b33a0c; text-decoration: none; }
+    a:hover { color: #8f2e09; }
+    .mono { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; height: 900px; display: flex; background: #faf8f4; color: #1f1f1f; overflow: hidden;">
+
+  <!-- Sidebar -->
+  <div style="width: 260px; flex: 0 0 260px; background: #f6f3ee; border-right: 1px solid #e7e3dc; display: flex; flex-direction: column; padding: 12px 10px; gap: 10px;">
+    <button style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 11px 16px; border: 0; border-radius: 999px; background: #ffc800; color: #1f1f1f; font: inherit; font-weight: 700; cursor: pointer;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      New chat
+    </button>
+
+    <div style="display: flex; flex-direction: column; gap: 2px; margin-top: 4px;">
+      <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6660; padding: 8px 8px 4px;">Today</div>
+      <div style="display: flex; align-items: center; border-radius: 8px; background: #fff9e3; padding: 8px 10px; font-size: 13.5px;">Recent priority incidents</div>
+      <div style="display: flex; align-items: center; border-radius: 8px; padding: 8px 10px; font-size: 13.5px; color: #1f1f1f;">Incidents by priority</div>
+      <div style="display: flex; align-items: center; border-radius: 8px; padding: 8px 10px; font-size: 13.5px;">Who is svc.claudecode.readonly</div>
+      <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6660; padding: 14px 8px 4px;">Earlier</div>
+      <div style="display: flex; align-items: center; border-radius: 8px; padding: 8px 10px; font-size: 13.5px;">Closed incidents about wifi</div>
+      <div style="display: flex; align-items: center; border-radius: 8px; padding: 8px 10px; font-size: 13.5px;">Catalog items needing review</div>
+    </div>
+
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-top: 1px solid #e7e3dc; color: #6b6660; font-size: 13px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b6660" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      Dark mode
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
+
+    <!-- Top bar -->
+    <div style="height: 60px; flex: 0 0 60px; display: flex; align-items: center; gap: 16px; padding: 0 20px; background: #1f1f1f; color: #ffffff; border-bottom: 4px solid #ffc800;">
+      <div style="font-weight: 700; font-size: 18px; letter-spacing: -0.3px;">ServiceNow Assistant</div>
+      <div style="font-size: 12px; color: #b9b4ac; letter-spacing: 0.06em; text-transform: uppercase;">cubesimpledemo4</div>
+
+      <!-- Mode: one segmented control replaces the loose toggle -->
+      <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 2px; padding: 3px; border-radius: 999px; background: #2e2e2e; border: 1px solid #444444;">
+          <div style="padding: 5px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; color: #b9b4ac;">Keyword</div>
+          <div style="display: flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 999px; background: #ffc800; color: #1f1f1f; font-size: 13px; font-weight: 700;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg>
+            Claude
+          </div>
+        </div>
+        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; border: 1px solid #444444; background: #2e2e2e; color: #f2efe9; font-size: 13px; font-weight: 600;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #4fd18b; box-shadow: 0 0 0 3px rgba(79,209,139,0.22);"></span>
+          Connected
+        </div>
+      </div>
+    </div>
+    <div style="height: 4px; flex: 0 0 4px; background: linear-gradient(90deg, #ffc800, #fb621f);"></div>
+
+    <!-- Transcript -->
+    <div style="flex: 1; overflow: hidden; padding: 24px 40px; display: flex; flex-direction: column; gap: 20px;">
+
+      <div style="align-self: flex-end; max-width: 620px; background: #f6f3ee; border: 1px solid #e7e3dc; border-radius: 14px; padding: 10px 16px; font-size: 14.5px;">
+        Give me the recent priority incident details
+      </div>
+
+      <div style="display: flex; gap: 12px; align-items: flex-start;">
+        <div style="width: 30px; height: 30px; flex: 0 0 30px; border-radius: 50%; background: #ffc800; display: flex; align-items: center; justify-content: center;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" stroke-width="2" stroke-linecap="round"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01"/></svg>
+        </div>
+
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 14.5px; max-width: 760px;">
+            The 10 most recently created P1/P2 incidents. Nothing is newer than mid-2025 on this instance, and none of them are assigned.
+          </div>
+
+          <!-- Result card: header bar gives the data its own identity -->
+          <div style="border: 1px solid #e7e3dc; border-radius: 12px; background: #ffffff; box-shadow: 0 6px 18px rgba(31,31,31,0.05); overflow: hidden;">
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #e7e3dc; background: #ffffff;">
+              <div style="font-weight: 700; font-size: 14px;">Incidents</div>
+              <div style="font-size: 12.5px; color: #6b6660;">10 rows &middot; priority 1&ndash;2 &middot; newest first</div>
+              <div style="margin-left: auto; display: flex; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px; padding: 5px 12px; border: 1px solid #e7e3dc; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: #1f1f1f;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" stroke-width="2" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>
+                  Export
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; padding: 5px 12px; border: 1px solid #e7e3dc; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: #1f1f1f;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v4h-4"/></svg>
+                  Refresh
+                </div>
+              </div>
+            </div>
+
+            <!-- Fixed layout: no horizontal scrolling, description truncates -->
+            <table style="width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left; table-layout: fixed;">
+              <thead>
+                <tr>
+                  <th style="width: 116px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; padding: 10px 14px; border-bottom: 1px solid #e7e3dc; background: #f6f3ee;">Number</th>
+                  <th style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; padding: 10px 14px; border-bottom: 1px solid #e7e3dc; background: #f6f3ee;">Short description</th>
+                  <th style="width: 96px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; padding: 10px 14px; border-bottom: 1px solid #e7e3dc; background: #f6f3ee;">State</th>
+                  <th style="width: 128px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; padding: 10px 14px; border-bottom: 1px solid #e7e3dc; background: #f6f3ee;">Priority</th>
+                  <th style="width: 132px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; padding: 10px 14px; border-bottom: 1px solid #e7e3dc; background: #f6f3ee; text-align: right;">Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><a class="mono" style="font-size: 12.5px; font-weight: 700;">INC0015523</a></td>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Group of alerts, High levels of multicast or broadcast traffic<div style="font-size: 12px; color: #6b6660;">Inquiry / Help</div></td>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #f1eee9; color: #6b6660; border: 1px solid #e7e3dc;">Closed</span></td>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #fff1ea; color: #b33a0c; border: 1px solid #fbc7b0;">2 &middot; High</span></td>
+                  <td class="mono" style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc; text-align: right; font-size: 12.5px; color: #6b6660;">2025-06-13<div>09:00:59</div></td>
+                </tr>
+                <tr>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><a class="mono" style="font-size: 12.5px; font-weight: 700;">INC0015522</a></td>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Group of alerts, The server or specific applications may crash unexpectedly<div style="font-size: 12px; color: #6b6660;">Inquiry / Help</div></td>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #f1eee9; color: #6b6660; border: 1px solid #e7e3dc;">Closed</span></td>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #fff1ea; color: #b33a0c; border: 1px solid #fbc7b0;">2 &middot; High</span></td>
+                  <td class="mono" style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc; text-align: right; font-size: 12.5px; color: #6b6660;">2025-06-13<div>09:00:58</div></td>
+                </tr>
+                <tr>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><a class="mono" style="font-size: 12.5px; font-weight: 700;">INC0015262</a></td>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">svmlxtibk8ua301 SNMP Status, Current value : 0<div style="font-size: 12px; color: #6b6660;">Inquiry / Help</div></td>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #e6f5ee; color: #1e7a54; border: 1px solid #a9dcc4;">New</span></td>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #fff1ea; color: #b33a0c; border: 1px solid #fbc7b0;">1 &middot; Critical</span></td>
+                  <td class="mono" style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc; text-align: right; font-size: 12.5px; color: #6b6660;">2025-01-13<div>05:11:00</div></td>
+                </tr>
+                <tr>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><a class="mono" style="font-size: 12.5px; font-weight: 700;">INC0015259</a></td>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">lp-10-249-97-212, physical memory exceeded threshold<div style="font-size: 12px; color: #6b6660;">Inquiry / Help</div></td>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #e6f5ee; color: #1e7a54; border: 1px solid #a9dcc4;">New</span></td>
+                  <td style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #fff1ea; color: #b33a0c; border: 1px solid #fbc7b0;">1 &middot; Critical</span></td>
+                  <td class="mono" style="padding: 11px 14px; border-bottom: 1px solid #e7e3dc; text-align: right; font-size: 12.5px; color: #6b6660;">2025-01-13<div>05:10:54</div></td>
+                </tr>
+                <tr>
+                  <td style="padding: 11px 14px;"><a class="mono" style="font-size: 12.5px; font-weight: 700;">INC0015201</a></td>
+                  <td style="padding: 11px 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">vmclxbuiws03 Agent not working<div style="font-size: 12px; color: #6b6660;">Inquiry / Help</div></td>
+                  <td style="padding: 11px 14px;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #e6f5ee; color: #1e7a54; border: 1px solid #a9dcc4;">New</span></td>
+                  <td style="padding: 11px 14px;"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #fff1ea; color: #b33a0c; border: 1px solid #fbc7b0;">2 &middot; High</span></td>
+                  <td class="mono" style="padding: 11px 14px; text-align: right; font-size: 12.5px; color: #6b6660;">2025-01-10<div>09:14:18</div></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-top: 1px solid #e7e3dc; background: #faf8f4; font-size: 12.5px; color: #6b6660;">
+              <span>Showing 5 of 10</span>
+              <span style="margin-left: auto; font-weight: 600; color: #b33a0c;">Show all 10</span>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <div style="padding: 6px 14px; border: 1px solid #e7e3dc; border-radius: 999px; background: #ffffff; font-size: 13px;">Only Critical (P1)</div>
+            <div style="padding: 6px 14px; border: 1px solid #e7e3dc; border-radius: 999px; background: #ffffff; font-size: 13px;">Group by assignment group</div>
+            <div style="padding: 6px 14px; border: 1px solid #e7e3dc; border-radius: 999px; background: #ffffff; font-size: 13px;">Open INC0015262</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Composer -->
+    <div style="padding: 16px 40px 24px; border-top: 1px solid #e7e3dc; background: #faf8f4;">
+      <div style="display: flex; align-items: center; gap: 12px; border: 1px solid #e7e3dc; border-radius: 999px; background: #fdfcfa; padding: 10px 10px 10px 20px; box-shadow: 0 6px 18px rgba(31,31,31,0.05);">
+        <div style="flex: 1; color: #6b6660; font-size: 14.5px;">Ask about incidents, catalog items, groups or users&hellip;</div>
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: #ffc800; display: flex; align-items: center; justify-content: center;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
