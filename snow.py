@@ -169,10 +169,15 @@ def send_delete(path):
             token in message for token in ("403", "ACL", "Forbidden", "security constraints")
         )
         if refused:
+            # ServiceNow answers 403 both for "you may not" and for "no such
+            # record", so that it never leaks whether a sys_id exists. Say both
+            # rather than asserting a permissions problem that may not be real.
             sys.exit(
                 "error: ServiceNow refused the delete (403).\n"
                 "%s\n"
-                "The account in servicenow-mcp/.env does not have delete rights." % message
+                "Either the sys_id does not exist, or the account in "
+                "servicenow-mcp/.env lacks delete rights on this table. Check the "
+                "sys_id with a query first." % message
             )
         sys.exit("error: %s" % message)
     except urllib.error.URLError as e:

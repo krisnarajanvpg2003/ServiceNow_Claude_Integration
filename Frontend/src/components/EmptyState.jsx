@@ -16,7 +16,7 @@ export default function EmptyState({ onPick }) {
     <div className="empty">
       <div className="empty-inner">
         <h1>How can I help with ServiceNow today?</h1>
-        <p className="dim">Ask in plain English. Every answer shows the exact read-only API call behind it.</p>
+        <p className="dim">Ask in plain English. Every answer shows the exact API call behind it.</p>
         <div className="suggestions">
           {SUGGESTIONS.map((s) => (
             <button key={s.text} type="button" className="suggestion" onClick={() => onPick(s.text)}>

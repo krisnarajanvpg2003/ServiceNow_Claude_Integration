@@ -143,23 +143,34 @@ set. Tell the user how to enable it rather than trying to set it yourself:
 
     PowerShell:  $env:SNOW_ALLOW_WRITE = "1"
 
+### Writing from the web chat
+
+The CLI and the web chat decide separately whether they may write, so enabling
+it in your shell does not enable it in the browser:
+
+| Client | Read-only | Writes enabled |
+| --- | --- | --- |
+| This CLI | default | `$env:SNOW_ALLOW_WRITE = "1"` |
+| Web chat at localhost:5174 | `start-backend.cmd` | `start-backend-write.cmd` (passes `--allow-write`) |
+
+The backend flag exists so that sharing the UI (`share.ps1`) cannot hand out
+write access by accident — start it the read-only way before exposing it.
+
 ## Repository layout
 
 - `snow.py` — the CLI (this is what you run)
 - `snow_export.py` — the Excel / PDF / CSV writers used by `snow.py export`
 - `exports/` — generated files, served at `http://127.0.0.1:8095/exports/<file>`
-- `mcp_server.py` — MCP adapter for Claude Desktop; each tool shells out to
-  `snow.py`. Not used by Claude Code — keep using the CLI here.
-- `CLAUDE_DESKTOP.md` — how to set that up
 - `servicenow-mcp/` — the REST API backend; `scripts/rest_api.py` is the server
 - `servicenow-mcp/docs/rest_api.md` — every operation, generated from the code
 - `Frontend/` — the React chat UI that calls the same REST API
 
-The `servicenow-mcp` folder name is misleading: there is no Model Context
-Protocol in the backend, the CLI or the web UI. All of that is plain REST.
+There is no Model Context Protocol anywhere in this project, despite the
+`servicenow-mcp` folder name. Everything is plain REST, API to API:
 
-The one exception is `mcp_server.py` at the root, which exists only so Claude
-Desktop can reach this project — MCP is the only way that app talks to outside
-tools. It is a thin adapter that runs `snow.py` for each tool call, not a second
-implementation. Nothing else in the stack uses it, and you should not use it
-from Claude Code: run `snow.py` directly as described above.
+    Claude  ->  snow.py  --HTTP-->  rest_api.py  --HTTPS-->  ServiceNow REST API
+                                    (holds the credentials)
+
+Keep it that way. If a client cannot reach the instance without MCP, that client
+is not a supported way in — the web chat at localhost:5174 is, and it goes
+through the same REST backend as everything else.

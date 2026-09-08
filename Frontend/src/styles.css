@@ -12,7 +12,7 @@
   --bg-glow: rgba(255, 200, 0, 0.22);
   --bg-sidebar: #f6f3ee;
   --bg-elev: #f1eee9;
-  --bg-hover: #fffdf6;
+  --bg-hover: #fffdf6;   
   --bg-active: #fff9e3;
   --bg-card: #ffffff;
   --bg-input: #fdfcfa;
@@ -1385,4 +1385,51 @@ code {
   color: var(--link);
   font-size: 12px;
   font-weight: 600;
+}
+
+/* Tables and code blocks in assistant answers */
+.rich-table-wrap {
+  overflow-x: auto;
+  margin: 8px 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.rich-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.rich-table th,
+.rich-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+.rich-table th {
+  background: var(--bg-elev);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.rich-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.rich-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+.rich-code {
+  overflow-x: auto;
+  margin: 8px 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--pre-bg);
+  color: var(--pre-fg);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.rich-code code {
+  background: none;
+  color: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre;
 }

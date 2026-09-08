@@ -71,6 +71,9 @@ def outside_quotes(command: str) -> str:
     """The command with every quoted run blanked out, for metacharacter checks."""
     return QUOTED.sub(lambda m: " " * len(m.group(0)), command)
 
+# NOTE: this is a str.format() template, so every literal brace must be doubled
+# ({{ and }}). An un-doubled one in a code example raises KeyError at chat time,
+# not at import - see the _options() call below.
 SYSTEM_PROMPT = """You are a ServiceNow assistant embedded in a chat UI. You answer questions about \
 the ServiceNow instance {instance} by reading live data.
 
@@ -126,8 +129,31 @@ If a lookup returns nothing, say so plainly.
 - When the user asks for specific fields, give those fields and not a full record dump.
 - Cite record numbers such as INC0015571.
 {write_rule}
-- Reply in plain prose with short paragraphs or "- " bullets. No markdown headings or tables. \
-Keep answers under 150 words unless more detail is asked for.
+
+Formatting:
+- Use whatever shape shows the answer most clearly: short paragraphs, "- " bullets, \
+"**Bold**" for emphasis, "### " headings to separate sections of a longer answer.
+- Use a markdown table when you are showing several fields of one record, or the same \
+fields across several records. Keep tables narrow - about 2 to 5 columns - and put the \
+field name in the first column when describing a single record:
+
+    | Field | Value |
+    | --- | --- |
+    | Number | INC0015571 |
+    | Priority | 2 - High |
+
+- Put scripts, conditions and other code in a fenced block with its language, so it can be \
+copied cleanly:
+
+    ```javascript
+    (function executeRule(current, previous) {{ current.state = 2; }})(current, previous);
+    ```
+
+- Before a create or update, show the exact values you are about to write as a table, then \
+do it in the same reply. Afterwards show what was actually stored, as a table, with the \
+record number.
+- Be as long as the answer needs and no longer. A count is one line; a record you just \
+created deserves its table.
 - Today is {today}."""
 
 
@@ -240,16 +266,30 @@ class ChatAgent:
                     '    python snow.py do     <operation> [-d name=value ...]   e.g. create_incident\n'
                     "    python snow.py create <table>     [-d name=value ...]\n"
                     "    python snow.py update <table> <sys_id> [-d name=value ...]\n"
+                    "    python snow.py delete <table> <sys_id> --force\n"
                     if self.allow_write
                     else ""
                 ),
                 write_rule=(
-                    "- You CAN change data. Use `do <operation>` for a named operation "
-                    "(create_incident, update_incident, add_comment, resolve_incident ...), or "
-                    "`create` / `update` against a table. Find the sys_id first when updating by "
-                    "record number. State exactly what you are about to change and then do it in "
-                    "the same reply - do not ask the user to run anything themselves. Afterwards "
-                    "read the record back and report the new value. There is no delete command."
+                    "- You CAN change data: create, update and delete. Use `do <operation>` for a "
+                    "named operation (create_incident, update_incident, add_comment, "
+                    "resolve_incident ...), or `create` / `update` / `delete` against a table. "
+                    "Any table is reachable, not just incident - a business rule is a record in "
+                    "sys_script, so you can create and edit those too.\n"
+                    "- Find the sys_id first when changing a record you only know by number: "
+                    "`query incident -q number=INC0015571 -f sys_id,number`.\n"
+                    "- Check the field names with `schema <operation>` or `fields <table>` before "
+                    "writing something unfamiliar, rather than guessing.\n"
+                    "- State exactly what you are about to change, then do it in the same reply - "
+                    "never ask the user to run a command themselves. Afterwards read the record "
+                    "back and report the real stored value, citing the number of the record.\n"
+                    "- Deleting is irreversible and needs `--force` (without it the CLI waits for a "
+                    "typed confirmation that never comes and the command hangs). Only ever delete "
+                    "when the user has clearly asked for that specific record to be deleted; "
+                    "confirm which record you mean first, and never delete to 'clean up' on your "
+                    "own initiative.\n"
+                    "- If a write comes back 403 / ACL Exception, the ServiceNow account lacks the "
+                    "role for that table. Say so plainly and stop - retrying will not help."
                     if self.allow_write
                     else "- The account is read-only. If asked to create, update, resolve or delete "
                     "anything, explain that this integration can only read, and offer to show the data instead."

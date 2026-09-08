@@ -169,7 +169,17 @@ export default function App() {
    */
   const sendWithClaude = useCallback(
     async (convId, replyId, text) => {
-      const sessionId = conversationsRef.current.find((c) => c.id === convId)?.aiSessionId || null
+      // Resuming carries the system prompt the session was created with, so a
+      // conversation started while the backend was read-only keeps refusing to
+      // write even after it is restarted with --allow-write. Drop the stored
+      // session when that mode has changed; the visible history stays.
+      // An older conversation has no recorded mode at all, so it is treated as
+      // stale too - once - rather than trusted. Losing that thread's server-side
+      // context is cheaper than a session that insists it cannot write.
+      const conv = conversationsRef.current.find((c) => c.id === convId)
+      const canWrite = Boolean(chatStatus?.can_write)
+      const stale = Boolean(conv?.aiSessionId) && conv.aiCanWrite !== canWrite
+      const sessionId = stale ? null : conv?.aiSessionId || null
       appendMessage(convId, {
         id: replyId,
         role: 'assistant',
@@ -221,7 +231,8 @@ export default function App() {
                 ai: { model: ev.model, costUsd: ev.cost_usd, numTurns: ev.num_turns },
                 request: { ...m.request, status: ev.is_error ? 502 : 200, elapsedMs: ev.elapsed_ms },
               }))
-              if (ev.session_id) patchConversation(convId, (c) => ({ ...c, aiSessionId: ev.session_id }))
+              if (ev.session_id)
+                patchConversation(convId, (c) => ({ ...c, aiSessionId: ev.session_id, aiCanWrite: canWrite }))
             } else if (ev.type === 'error') {
               patch((m) => ({
                 ...m,
@@ -251,7 +262,7 @@ export default function App() {
         abortRef.current = null
       }
     },
-    [appendMessage, replaceMessage, patchConversation],
+    [appendMessage, replaceMessage, patchConversation, chatStatus?.can_write],
   )
 
   const send = useCallback(

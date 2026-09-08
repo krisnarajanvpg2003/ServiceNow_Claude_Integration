@@ -1,14 +1,61 @@
 // Small renderer for assistant prose: paragraphs, "- " bullets, "1." numbered
-// lists, "#" headings, **bold**, `code` and links. Deliberately not a full
-// Markdown engine.
+// lists, "#" headings, markdown tables, ``` code blocks, **bold**, `code` and
+// links. Deliberately not a full Markdown engine - just the shapes the
+// assistant is told to use.
 import { exportHref, exportLabel, isExportUrl } from '../lib/exports.js'
 
-export default function RichText({ text }) {
-  if (!text) return null
+const TABLE_ROW = /^\s*\|(.+)\|\s*$/
+// | --- | :--- | ---: | the separator under a table's header row
+const TABLE_RULE = /^\s*\|[\s:|-]+\|\s*$/
+const FENCE = /^\s*```(\w*)\s*$/
+
+function cells(line) {
+  return line
+    .replace(/^\s*\|/, '')
+    .replace(/\|\s*$/, '')
+    .split('|')
+    .map((c) => c.trim())
+}
+
+function parse(text) {
+  const lines = text.split('\n')
   const blocks = []
   let list = null
-  for (const rawLine of text.split('\n')) {
-    const line = rawLine.replace(/\s+$/, '')
+  let i = 0
+
+  while (i < lines.length) {
+    const raw = lines[i]
+    const line = raw.replace(/\s+$/, '')
+
+    // ``` fenced code: take everything up to the closing fence verbatim.
+    const fence = line.match(FENCE)
+    if (fence) {
+      const code = []
+      i += 1
+      while (i < lines.length && !FENCE.test(lines[i])) {
+        code.push(lines[i])
+        i += 1
+      }
+      i += 1 // skip the closing fence
+      blocks.push({ type: 'code', lang: fence[1] || '', text: code.join('\n') })
+      list = null
+      continue
+    }
+
+    // A table needs a header row and the |---|---| rule directly under it.
+    if (TABLE_ROW.test(line) && i + 1 < lines.length && TABLE_RULE.test(lines[i + 1])) {
+      const head = cells(line)
+      const rows = []
+      i += 2
+      while (i < lines.length && TABLE_ROW.test(lines[i]) && !TABLE_RULE.test(lines[i])) {
+        rows.push(cells(lines[i]))
+        i += 1
+      }
+      blocks.push({ type: 'table', head, rows })
+      list = null
+      continue
+    }
+
     const bullet = line.match(/^\s*[-•*]\s+(.*)$/)
     const numbered = line.match(/^\s*(\d+)[.)]\s+(.*)$/)
     const heading = line.match(/^\s*#{1,4}\s+(.*)$/)
@@ -24,10 +71,16 @@ export default function RichText({ text }) {
       if (heading) blocks.push({ type: 'h', text: heading[1] })
       else if (line.trim()) blocks.push({ type: 'p', text: line })
     }
+    i += 1
   }
+  return blocks
+}
+
+export default function RichText({ text }) {
+  if (!text) return null
   return (
     <div className="rich">
-      {blocks.map((block, i) => {
+      {parse(text).map((block, i) => {
         if (block.type === 'ul' || block.type === 'ol') {
           const Tag = block.type
           return (
@@ -36,6 +89,39 @@ export default function RichText({ text }) {
                 <li key={j}>{inline(item)}</li>
               ))}
             </Tag>
+          )
+        }
+        if (block.type === 'code') {
+          return (
+            <pre key={i} className="rich-code" data-lang={block.lang || undefined}>
+              <code>{block.text}</code>
+            </pre>
+          )
+        }
+        if (block.type === 'table') {
+          return (
+            // Wrapped so a wide table scrolls inside the bubble instead of
+            // stretching it past the width of the conversation.
+            <div key={i} className="rich-table-wrap">
+              <table className="rich-table">
+                <thead>
+                  <tr>
+                    {block.head.map((h, j) => (
+                      <th key={j}>{inline(h)}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {block.rows.map((row, j) => (
+                    <tr key={j}>
+                      {block.head.map((_, k) => (
+                        <td key={k}>{inline(row[k] ?? '')}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )
         }
         if (block.type === 'h') return <p key={i} className="rich-heading">{inline(block.text)}</p>
@@ -50,7 +136,7 @@ export default function RichText({ text }) {
 const INLINE = /(\*\*[^*]+\*\*|`[^`]+`|https?:\/\/[^\s<>()"]+[^\s<>()".,;:!?])/g
 
 function inline(s) {
-  return s.split(INLINE).map((part, i) => {
+  return String(s).split(INLINE).map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) return <strong key={i}>{part.slice(2, -2)}</strong>
     if (part.startsWith('`') && part.endsWith('`')) return <code key={i}>{part.slice(1, -1)}</code>
     if (/^https?:\/\//.test(part)) return link(part, i)
