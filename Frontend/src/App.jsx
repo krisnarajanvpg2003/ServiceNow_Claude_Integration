@@ -168,7 +168,7 @@ export default function App() {
    * snow.py CLI against the same REST API; each command it runs is shown.
    */
   const sendWithClaude = useCallback(
-    async (convId, replyId, text) => {
+    async (convId, replyId, text, attachments = []) => {
       // Resuming carries the system prompt the session was created with, so a
       // conversation started while the backend was read-only keeps refusing to
       // write even after it is restarted with --allow-write. Drop the stored
@@ -199,6 +199,7 @@ export default function App() {
         await streamChat({
           message: text,
           sessionId,
+          attachments: attachments.map((f) => f.id),
           signal: controller.signal,
           onEvent: (ev) => {
             if (ev.type === 'status') {
@@ -266,16 +267,23 @@ export default function App() {
   )
 
   const send = useCallback(
-    async (raw) => {
+    async (raw, attachments) => {
       const text = (raw || '').trim()
-      if (!text || busy) return
+      const files = attachments || []
+      if ((!text && files.length === 0) || busy) return
 
       let convId = activeId
-      const userMessage = { id: uid(), role: 'user', text, ts: Date.now() }
+      const userMessage = { id: uid(), role: 'user', text, attachments: files, ts: Date.now() }
       if (!convId) {
         convId = uid()
         setConversations((prev) => [
-          { id: convId, title: makeTitle(text), createdAt: Date.now(), updatedAt: Date.now(), messages: [userMessage] },
+          {
+            id: convId,
+            title: makeTitle(text || `${files.length} attachment${files.length === 1 ? '' : 's'}`),
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            messages: [userMessage],
+          },
           ...prev,
         ])
         setActiveId(convId)
@@ -287,7 +295,8 @@ export default function App() {
       // Raw API paths and "help" stay local even in Claude mode.
       const useClaude =
         aiMode && chatStatus?.available && !text.startsWith('/') && !/^\s*help\b/i.test(text)
-      if (useClaude) await sendWithClaude(convId, replyId, text)
+      // The local rule engine only maps text to a GET; a file has to go to Claude.
+      if (useClaude || files.length > 0) await sendWithClaude(convId, replyId, text, files)
       else await sendWithRules(convId, replyId, text)
     },
     [activeId, busy, aiMode, chatStatus, appendMessage, sendWithClaude, sendWithRules],

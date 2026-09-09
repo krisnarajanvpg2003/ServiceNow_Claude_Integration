@@ -95,13 +95,33 @@ export async function getChatStatus({ signal } = {}) {
  * POST /chat and consume the server-sent event stream. `onEvent` receives each
  * decoded event: status, tool_use, tool_result, text, done, error.
  */
-export async function streamChat({ message, sessionId = null, signal, onEvent }) {
+/**
+ * Send one file to the backend, which keeps it until the next message refers
+ * to its id. Images and text files only - anything else comes back 415 with a
+ * message worth showing the user.
+ */
+export async function uploadFile(file, { signal } = {}) {
+  const form = new FormData()
+  form.append('file', file, file.name)
+  let response
+  try {
+    response = await fetch(`${API_BASE}/uploads`, { method: 'POST', body: form, signal })
+  } catch (err) {
+    if (err?.name === 'AbortError') throw err
+    throw unreachable()
+  }
+  const { data, isJson } = await parseBody(response)
+  if (!response.ok || !data?.ok) throw errorFrom(response, data, isJson)
+  return data.upload
+}
+
+export async function streamChat({ message, sessionId = null, attachments = [], signal, onEvent }) {
   let response
   try {
     response = await fetch(`${API_BASE}/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-      body: JSON.stringify({ message, session_id: sessionId }),
+      body: JSON.stringify({ message, session_id: sessionId, attachments }),
       signal,
     })
   } catch (err) {

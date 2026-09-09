@@ -1,0 +1,17 @@
+{
+  "artboards": [
+    { "file": "Before.dc.html", "x": 0, "y": 0, "w": 860, "h": 720, "title": "Before - today" },
+    { "file": "Main.dc.html", "x": 960, "y": 0, "w": 860, "h": 720, "title": "After - collapsed run bar" },
+    { "file": "Dark.dc.html", "x": 1920, "y": 0, "w": 860, "h": 720, "title": "Dark mode states" }
+  ],
+  "annotations": [
+    {
+      "id": "note-brief",
+      "x": 0,
+      "y": -150,
+      "w": 700,
+      "text": "Tool calls in the ServiceNow Assistant chat.\nClick the run bar on the middle artboard to open and close it, and click any command row to show its output.\nTweak chips above that artboard switch between the finished and still-running states."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

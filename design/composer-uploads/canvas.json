@@ -1,0 +1,17 @@
+{
+  "artboards": [
+    { "file": "Before.dc.html", "x": 0, "y": 0, "w": 880, "h": 520, "title": "Before - today" },
+    { "file": "Main.dc.html", "x": 980, "y": 0, "w": 880, "h": 520, "title": "After - upload menu" },
+    { "file": "Dark.dc.html", "x": 1960, "y": 0, "w": 880, "h": 520, "title": "Dark mode - uploading" }
+  ],
+  "annotations": [
+    {
+      "id": "note-brief",
+      "x": 0,
+      "y": -160,
+      "w": 720,
+      "text": "Composer row for the ServiceNow Assistant chat.\nOn the middle artboard the + button opens and closes the menu, and picking an item attaches the sample files.\nThe tweak chips above it toggle the menu and the attachments independently."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

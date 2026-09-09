@@ -67,3 +67,59 @@ export const SparkIcon = () => (
     <path d="M19 17l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z" />
   </svg>
 )
+
+/** Chevron for the run bar and its command rows; rotated with CSS when open. */
+export const ChevronIcon = () => (
+  <svg {...base} width={14} height={14} strokeWidth={2.2}>
+    <path d="m9 6 6 6-6 6" />
+  </svg>
+)
+
+/** Marks the run bar: these are commands, not prose. */
+export const CodeIcon = () => (
+  <svg {...base} width={15} height={15}>
+    <path d="M8 6 4 12l4 6" />
+    <path d="m16 6 4 6-4 6" />
+  </svg>
+)
+
+export const CheckIcon = () => (
+  <svg {...base} width={14} height={14} strokeWidth={2.6}>
+    <path d="M20 6 9 17l-5-5" />
+  </svg>
+)
+
+export const CrossIcon = () => (
+  <svg {...base} width={14} height={14} strokeWidth={2.6}>
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </svg>
+)
+
+/** An open arc that reads as motion once the CSS spins it. */
+export const SpinnerIcon = () => (
+  <svg {...base} width={15} height={15} strokeWidth={2.4}>
+    <path d="M12 3a9 9 0 1 0 9 9" />
+  </svg>
+)
+
+export const PaperclipIcon = () => (
+  <svg {...base} strokeWidth={1.8}>
+    <path d="M21 12.5 12.5 21a5 5 0 0 1-7-7l8-8a3.5 3.5 0 1 1 5 5l-8 8a2 2 0 0 1-3-3l7.5-7.5" />
+  </svg>
+)
+
+export const ImageIcon = () => (
+  <svg {...base} strokeWidth={1.8}>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <circle cx="8.5" cy="9.5" r="1.5" />
+    <path d="m21 16-5-5L5 20" />
+  </svg>
+)
+
+export const XIcon = () => (
+  <svg {...base} width={13} height={13} strokeWidth={2.4}>
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </svg>
+)

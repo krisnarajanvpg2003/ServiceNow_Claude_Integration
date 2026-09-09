@@ -37,6 +37,7 @@ that is reported back as-is rather than hidden.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import logging
 import os
@@ -56,6 +57,7 @@ from starlette.responses import FileResponse, JSONResponse, StreamingResponse
 from starlette.routing import Route
 
 from servicenow_mcp.chat_agent import ChatAgent, strip_claude_code_env
+from servicenow_mcp import uploads
 from servicenow_mcp.registry import ServiceNowRegistry
 from servicenow_mcp.utils.config import (
     AuthConfig,
@@ -584,6 +586,51 @@ def create_app(registry: ServiceNowRegistry, agent: "ChatAgent | None" = None) -
             headers={"Content-Disposition": f'attachment; filename="{target.name}"'},
         )
 
+    # ----- files attached to a chat message -------------------------------
+
+    async def upload_create(request: Request) -> JSONResponse:
+        """
+        Take one file from the composer and keep it for the next message.
+
+        Accepts a multipart form (field "file") or, for clients that would
+        rather not build one, a JSON body of {name, data} with base64 data.
+        """
+        content_type = request.headers.get("content-type", "")
+        try:
+            if content_type.startswith("multipart/form-data"):
+                form = await request.form()
+                item = form.get("file")
+                if item is None or not hasattr(item, "read"):
+                    return JSONResponse({"ok": False, "error": "no file in the form"}, 400)
+                name = getattr(item, "filename", "") or "file"
+                data = await item.read()
+            else:
+                body = json.loads(await request.body() or b"{}")
+                name = str(body.get("name", "") or "file")
+                data = base64.b64decode(body.get("data", "") or "", validate=False)
+        except (json.JSONDecodeError, ValueError, TypeError) as exc:
+            return JSONResponse({"ok": False, "error": f"could not read the upload: {exc}"}, 400)
+
+        try:
+            record = await run_in_threadpool(uploads.save, name, data)
+        except uploads.UploadError as exc:
+            # A refusal the user should read, not a server fault.
+            return JSONResponse({"ok": False, "error": str(exc)}, 415)
+        except OSError as exc:
+            logger.exception("upload failed")
+            return JSONResponse({"ok": False, "error": f"could not store the file: {exc}"}, 500)
+
+        base = str(request.base_url).rstrip("/")
+        record["url"] = f"{base}/uploads/{record['id']}"
+        return JSONResponse({"ok": True, "upload": record})
+
+    async def upload_read(request: Request) -> Any:
+        """Serve an upload back, so the composer can show an image preview."""
+        record = uploads.load(request.path_params["upload_id"])
+        if not record:
+            return JSONResponse({"ok": False, "error": "no such upload"}, 404)
+        return FileResponse(record["path"], media_type=record["media_type"], filename=record["name"])
+
     # ----- natural-language chat ------------------------------------------
 
     async def chat_status(request: Request) -> JSONResponse:
@@ -602,18 +649,36 @@ def create_app(registry: ServiceNowRegistry, agent: "ChatAgent | None" = None) -
             return JSONResponse({"ok": False, "error": "Body must be a JSON object"}, 400)
 
         message = str(body.get("message", "")).strip()
-        if not message:
+        raw_ids = body.get("attachments") or []
+        if not isinstance(raw_ids, list):
+            return JSONResponse({"ok": False, "error": "attachments must be a list of ids"}, 400)
+        if not message and not raw_ids:
             return JSONResponse({"ok": False, "error": "message is required"}, 400)
         if len(message) > 4000:
             return JSONResponse({"ok": False, "error": "message is too long"}, 400)
         session_id = body.get("session_id") or None
+
+        # Load each attachment's bytes here, so the agent is handed content
+        # rather than paths it has no tool to open.
+        attachments: List[Dict[str, Any]] = []
+        for record in uploads.resolve([str(i) for i in raw_ids]):
+            data = Path(record["path"]).read_bytes()
+            if record["kind"] == "image":
+                record["data"] = base64.b64encode(data).decode("ascii")
+            else:
+                record["text"] = data.decode("utf-8", "replace")
+            attachments.append(record)
+        if raw_ids and not attachments:
+            return JSONResponse({"ok": False, "error": "those attachments have expired"}, 400)
 
         status = agent.status()
         if not status["available"]:
             return JSONResponse({"ok": False, "error": status["reason"]}, 503)
 
         async def events():
-            async for event in agent.run(message, session_id=session_id):
+            async for event in agent.run(
+                message, session_id=session_id, attachments=attachments
+            ):
                 yield "data: " + json.dumps(event) + "\n\n"
 
         return StreamingResponse(
@@ -628,6 +693,8 @@ def create_app(registry: ServiceNowRegistry, agent: "ChatAgent | None" = None) -
             Route("/health", health),
             Route("/exports", export_list, methods=["GET"]),
             Route("/exports/{filename}", export_download, methods=["GET"]),
+            Route("/uploads", upload_create, methods=["POST"]),
+            Route("/uploads/{upload_id}", upload_read, methods=["GET"]),
             # discovery + generic invocation (all tools)
             Route("/chat/status", chat_status, methods=["GET"]),
             Route("/chat", chat, methods=["POST"]),

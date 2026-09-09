@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.5; }
+    a { color: #b33a0c; } a:hover { color: #8f2e09; }
+    .mono { font-family: ui-monospace, 'Cascadia Mono', Consolas, 'Liberation Mono', monospace; font-size: 12.5px; overflow-wrap: anywhere; }
+  </style>
+</helmet>
+
+<div style="background: #faf8f4; padding: 26px 28px 34px; min-height: 100%; box-sizing: border-box;">
+
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
+    <span style="display: inline-block; padding: 3px 9px; border-radius: 999px; background: #fff1ea; color: #b33a0c; border: 1px solid #fbc7b0; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;">Today</span>
+    <span style="color: #6b6660; font-size: 13px;">every command is its own always-open block</span>
+  </div>
+
+  <div style="display: flex; justify-content: flex-end; margin-bottom: 18px;">
+    <div style="background: #f6f3ee; border: 1px solid #e7e3dc; border-radius: 18px; padding: 10px 16px; max-width: 78%;">
+      create the business rule for if incident is created, after 1 min it should go with state inprogress
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 14px;">
+    <div style="width: 32px; height: 32px; flex: 0 0 32px; margin-top: 2px; border-radius: 50%; display: grid; place-items: center; background: #1f1f1f; border: 2px solid #ffc800;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffc800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="8" width="16" height="12" rx="3"></rect>
+        <path d="M12 8V4"></path><circle cx="9" cy="14" r="1"></circle><circle cx="15" cy="14" r="1"></circle>
+      </svg>
+    </div>
+
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; padding-top: 4px;">
+
+      <div style="border: 1px solid #e7e3dc; border-left: 4px solid #ffc800; border-radius: 10px; background: #ffffff; padding: 8px 12px;">
+        <span class="mono">python snow.py fields sys_script</span>
+      </div>
+
+      <div style="border: 1px solid #e7e3dc; border-left: 4px solid #fb621f; border-radius: 10px; background: #ffffff; padding: 8px 12px;">
+        <span class="mono">python snow.py create sys_script -d name="Set incident In Progress after 1 minute" -d collection=incident -d when=after -d action_insert=true -d active=true -d order=100 -d description="After an incident is created, schedules a one-time job that sets the state to In Progress 60 seconds later (only if still New)." -d script="(function executeRule(current, previous /*null when async*/) { var trig = new GlideRecord('sys_trigger'); trig.initialize(); trig.name = 'Set In Progress - ' + current.number; trig.trigger_type = 0; // Run Once trig.state = 0; var when = new GlideDateTime(); when.addSeconds(60); trig.next_action = when;</span>
+        <div style="color: #6b6660; font-size: 13px; margin-top: 6px;">failed</div>
+      </div>
+
+      <div style="border: 1px solid #e7e3dc; border-left: 4px solid #fb621f; border-radius: 10px; background: #ffffff; padding: 8px 12px;">
+        <span class="mono">python snow.py create sys_script -d name="Set incident In Progress after 1 minute" -d collection=incident -d when=after -d action_insert=true -d active=true -d order=100 -d description="After an incident is created, schedules a one-time job that sets the state to In Progress 60 seconds later (only if still New)." -d script="(function executeRule(current, previous) { var trig = new GlideRecord('sys_trigger'); trig.initialize();</span>
+        <div style="color: #6b6660; font-size: 13px; margin-top: 6px;">failed</div>
+      </div>
+
+      <div style="border: 1px solid #e7e3dc; border-left: 4px solid #ffc800; border-radius: 10px; background: #ffffff; padding: 8px 12px; position: relative; overflow: hidden;">
+        <span class="mono">python snow.py create sys_script -d name="Set incident In Progress after 1 minute" -d collection=incident -d when=after -d action_insert=true -d active=true -d order=100 -d description="After an incident is created, schedules</span>
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 34px; background: linear-gradient(to bottom, rgba(255,255,255,0), #ffffff);"></div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px; color: #b33a0c; font-size: 13px; padding-top: 2px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b33a0c" stroke-width="2" stroke-linecap="round">
+          <path d="M12 19V5"></path><path d="m5 12 7 7 7-7"></path>
+        </svg>
+        the actual answer is somewhere below the fold
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

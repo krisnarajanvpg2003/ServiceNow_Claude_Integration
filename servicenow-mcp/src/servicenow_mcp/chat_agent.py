@@ -57,6 +57,8 @@ DEFAULT_EFFORT = "medium"
 # that real work ran out of turns mid-way and returned nothing at all.
 MAX_TURNS = int(os.getenv("CHAT_MAX_TURNS") or 30)
 MAX_MESSAGE_CHARS = 4000
+# How much of an attached text file is inlined into the prompt.
+MAX_ATTACHED_CHARS = 40_000
 
 # The only command shape the agent may run. Anything else is denied.
 ALLOWED_COMMAND = re.compile(r"^\s*python\s+snow\.py(\s|$)")
@@ -184,6 +186,69 @@ def strip_claude_code_env() -> None:
     for name in list(os.environ):
         if name.startswith("CLAUDE_CODE_") or name in {"CLAUDECODE", "CLAUDE_SESSION_ID"}:
             os.environ.pop(name, None)
+
+
+def build_prompt(message: str, attachments: Optional[List[Dict[str, Any]]]):
+    """
+    The prompt for one turn: a plain string, or a stream of content blocks when
+    the user attached something.
+
+    An image goes in as an image block, so Claude sees the screenshot rather
+    than being told one exists. A text file is inlined, fenced and labelled with
+    its name, and truncated with a note if it is long - Claude's only tool is
+    snow.py, so it cannot open a file on disk for itself.
+    """
+    if not attachments:
+        return message
+
+    blocks: List[Dict[str, Any]] = []
+    notes: List[str] = []
+
+    for item in attachments:
+        name = item.get("name", "file")
+        if item.get("kind") == "image":
+            blocks.append({
+                "type": "image",
+                "source": {
+                    "type": "base64",
+                    "media_type": item.get("media_type", "image/png"),
+                    "data": item["data"],
+                },
+            })
+            notes.append(f"- {name} (image, shown above)")
+        else:
+            text = item.get("text", "")
+            clipped = len(text) > MAX_ATTACHED_CHARS
+            body = text[:MAX_ATTACHED_CHARS]
+            blocks.append({
+                "type": "text",
+                "text": (
+                    f"Attached file: {name}\n```\n{body}\n```"
+                    + (f"\n[truncated - {len(text)} characters in total]" if clipped else "")
+                ),
+            })
+            notes.append(f"- {name} ({len(text)} characters{' , truncated' if clipped else ''})")
+
+    blocks.append({
+        "type": "text",
+        "text": (
+            (message or "").strip()
+            + "\n\n[The user attached:\n"
+            + "\n".join(notes)
+            + "\nUse them to answer. They are NOT in ServiceNow: to look something up from "
+            "an attachment, read the value off it and then query ServiceNow for that value.]"
+        ),
+    })
+
+    async def stream():
+        yield {
+            "type": "user",
+            "session_id": "",
+            "parent_tool_use_id": None,
+            "message": {"role": "user", "content": blocks},
+        }
+
+    return stream()
 
 
 def _deny(reason: str) -> PermissionResultDeny:
@@ -330,7 +395,10 @@ class ChatAgent:
     # ----- run ------------------------------------------------------------
 
     async def run(
-        self, message: str, session_id: Optional[str] = None
+        self,
+        message: str,
+        session_id: Optional[str] = None,
+        attachments: Optional[List[Dict[str, Any]]] = None,
     ) -> AsyncIterator[Dict[str, Any]]:
         """Yield events: status, tool_use, tool_result, text, done, error."""
         started = time.perf_counter()
@@ -340,7 +408,8 @@ class ChatAgent:
         yield {"type": "status", "text": "Reading ServiceNow..."}
 
         try:
-            async for msg in query(prompt=message, options=self._options(session_id)):
+            prompt = build_prompt(message, attachments)
+            async for msg in query(prompt=prompt, options=self._options(session_id)):
                 if isinstance(msg, AssistantMessage):
                     for block in msg.content:
                         if isinstance(block, TextBlock) and block.text.strip():

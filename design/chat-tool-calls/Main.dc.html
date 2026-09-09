@@ -1,0 +1,205 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.5; }
+    a { color: #b33a0c; } a:hover { color: #8f2e09; }
+    .mono { font-family: ui-monospace, 'Cascadia Mono', Consolas, 'Liberation Mono', monospace; font-size: 12.5px; }
+    .clip { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .runbar { cursor: pointer; user-select: none; }
+    .runbar:hover { background: #fffdf6; border-color: #c9c3b8; }
+    .cmdrow { cursor: pointer; }
+    .cmdrow:hover { background: #fffdf6; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin { animation: spin 0.9s linear infinite; transform-origin: 50% 50%; }
+  </style>
+</helmet>
+
+<div style="background: #faf8f4; padding: 26px 28px 34px; min-height: 100%; box-sizing: border-box;">
+
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
+    <span style="display: inline-block; padding: 3px 9px; border-radius: 999px; background: #e6f5ee; color: #1e7a54; border: 1px solid #a9dcc4; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;">Proposed</span>
+    <span style="color: #6b6660; font-size: 13px;">one row for the whole run &mdash; click to open</span>
+  </div>
+
+  <div style="display: flex; justify-content: flex-end; margin-bottom: 18px;">
+    <div style="background: #f6f3ee; border: 1px solid #e7e3dc; border-radius: 18px; padding: 10px 16px; max-width: 78%;">
+      create the business rule for if incident is created, after 1 min it should go with state inprogress
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 14px;">
+    <div style="width: 32px; height: 32px; flex: 0 0 32px; margin-top: 2px; border-radius: 50%; display: grid; place-items: center; background: #1f1f1f; border: 2px solid #ffc800;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffc800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="8" width="16" height="12" rx="3"></rect>
+        <path d="M12 8V4"></path><circle cx="9" cy="14" r="1"></circle><circle cx="15" cy="14" r="1"></circle>
+      </svg>
+    </div>
+
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; padding-top: 4px;">
+
+      <!-- the collapsed run bar -->
+      <div class="runbar" onClick="{{ toggle }}" style="display: flex; align-items: center; gap: 9px; align-self: flex-start; max-width: 100%; padding: 7px 12px 7px 10px; border: 1px solid #e7e3dc; border-radius: 10px; background: #ffffff; transition: background 0.12s ease, border-color 0.12s ease;">
+        <sc-if value="{{ running }}" hint-placeholder-val="{{ false }}">
+          <svg class="spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9a5b00" stroke-width="2.4" stroke-linecap="round">
+            <path d="M12 3a9 9 0 1 0 9 9"></path>
+          </svg>
+        </sc-if>
+        <sc-if value="{{ done }}" hint-placeholder-val="{{ true }}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6b6660" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 6 4 12l4 6"></path><path d="m16 6 4 6-4 6"></path>
+          </svg>
+        </sc-if>
+
+        <span class="clip" style="font-size: 13.5px; color: #1f1f1f;">{{ headline }}</span>
+
+        <sc-if value="{{ hasFailures }}" hint-placeholder-val="{{ true }}">
+          <span style="flex: none; padding: 1px 7px; border-radius: 999px; background: #fff1ea; color: #b33a0c; border: 1px solid #fbc7b0; font-size: 11px; font-weight: 600;">{{ failedLabel }}</span>
+        </sc-if>
+
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b6660" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-left: 2px; transform: {{ chevron }}; transition: transform 0.15s ease;">
+          <path d="m9 6 6 6-6 6"></path>
+        </svg>
+      </div>
+
+      <!-- the expanded list -->
+      <sc-if value="{{ open }}" hint-placeholder-val="{{ true }}">
+        <div style="border: 1px solid #e7e3dc; border-radius: 10px; background: #ffffff; overflow: hidden;">
+          <sc-for list="{{ items }}" as="item" hint-placeholder-count="3">
+            <div style="border-top: {{ item.divider }};">
+              <div class="cmdrow" onClick="{{ item.pick }}" style="display: flex; align-items: center; gap: 9px; padding: 8px 12px; transition: background 0.12s ease;">
+                <span style="flex: none; width: 16px; height: 16px; display: grid; place-items: center;">
+                  <sc-if value="{{ item.ok }}" hint-placeholder-val="{{ true }}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1e7a54" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{ item.bad }}" hint-placeholder-val="{{ false }}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b33a0c" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                  </sc-if>
+                </span>
+                <span style="flex: none; font-size: 13px; font-weight: 600; color: #1f1f1f;">{{ item.verb }}</span>
+                <span class="mono clip" style="flex: 1; min-width: 0; color: #6b6660;">{{ item.rest }}</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a9a39b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; transform: {{ item.chevron }}; transition: transform 0.15s ease;">
+                  <path d="m9 6 6 6-6 6"></path>
+                </svg>
+              </div>
+              <sc-if value="{{ item.isOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 0 12px 12px 37px;">
+                  <pre class="mono" style="margin: 0; padding: 9px 11px; background: #f1eee9; border: 1px solid #e7e3dc; border-radius: 8px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 190px; overflow-y: auto; color: #1f1f1f;">{{ item.output }}</pre>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- the answer, which is what the user came for -->
+      <div>
+        <p style="margin: 0 0 8px;">Business rule created and verified.</p>
+
+        <div style="overflow-x: auto; margin: 8px 0; border: 1px solid #e7e3dc; border-radius: 10px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+              <tr>
+                <th style="padding: 7px 10px; border-bottom: 1px solid #e7e3dc; background: #f1eee9; font-weight: 600; text-align: left; white-space: nowrap;">Field</th>
+                <th style="padding: 7px 10px; border-bottom: 1px solid #e7e3dc; background: #f1eee9; font-weight: 600; text-align: left; white-space: nowrap;">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding: 7px 10px; border-bottom: 1px solid #e7e3dc;">Name</td><td style="padding: 7px 10px; border-bottom: 1px solid #e7e3dc;">Set incident In Progress after 1 minute</td></tr>
+              <tr><td style="padding: 7px 10px; border-bottom: 1px solid #e7e3dc;">Table</td><td style="padding: 7px 10px; border-bottom: 1px solid #e7e3dc;">incident</td></tr>
+              <tr><td style="padding: 7px 10px; border-bottom: 1px solid #e7e3dc;">When</td><td style="padding: 7px 10px; border-bottom: 1px solid #e7e3dc;">after &middot; insert</td></tr>
+              <tr><td style="padding: 7px 10px;">sys_id</td><td style="padding: 7px 10px;"><span class="mono">f53037903b530710a58b920f23e45a7b</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"phase":{"editor":"enum","options":["done","running"],"default":"done","section":"State"},"startOpen":{"editor":"boolean","default":false,"section":"State"}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { open: null, openCmd: 1 };
+  }
+
+  commands() {
+    return [
+      {
+        verb: "fields",
+        rest: "sys_script",
+        ok: true,
+        output: "name               string    Name\ncollection         string    Table\nwhen               string    When\naction_insert      boolean   Insert\nscript             script    Script\n\n62 field(s)."
+      },
+      {
+        verb: "create",
+        rest: "sys_script -d name=\"Set incident In Progress after 1 minute\" -d collection=incident -d when=after -d script=\"...\" | head -60",
+        ok: false,
+        output: "Chained or redirected commands are not allowed. Run one snow.py command."
+      },
+      {
+        verb: "create",
+        rest: "sys_script -d name=\"Set incident In Progress after 1 minute\" -d collection=incident 2>&1",
+        ok: false,
+        output: "Chained or redirected commands are not allowed. Run one snow.py command."
+      },
+      {
+        verb: "create",
+        rest: "sys_script -d name=\"Set incident In Progress after 1 minute\" -d collection=incident -d when=after -d action_insert=true -d order=100 -d script=\"...\"",
+        ok: true,
+        output: "created sys_script\n  sys_id   f53037903b530710a58b920f23e45a7b\n  name     Set incident In Progress after 1 minute"
+      },
+      {
+        verb: "query",
+        rest: "sys_script -q sys_id=f53037903b530710a58b920f23e45a7b -f name,collection,when,order --format json",
+        ok: true,
+        output: "[\n  {\n    \"name\": \"Set incident In Progress after 1 minute\",\n    \"collection\": \"incident\",\n    \"when\": \"after\",\n    \"order\": \"100\"\n  }\n]"
+      }
+    ];
+  }
+
+  renderVals() {
+    var running = (this.props.phase ?? "done") === "running";
+    var startOpen = this.props.startOpen ?? false;
+    var open = this.state.open === null ? startOpen : this.state.open;
+    var cmds = this.commands();
+    var failed = cmds.filter(function (c) { return !c.ok; }).length;
+    var self = this;
+
+    return {
+      running: running,
+      done: !running,
+      open: open,
+      headline: running ? "Running snow.py create sys_script" : "Ran " + cmds.length + " commands",
+      hasFailures: !running && failed > 0,
+      failedLabel: failed + " failed",
+      chevron: open ? "rotate(90deg)" : "rotate(0deg)",
+      toggle: function () { self.setState({ open: !open }); },
+      items: cmds.map(function (c, i) {
+        return {
+          verb: c.verb,
+          rest: c.rest,
+          ok: c.ok,
+          bad: !c.ok,
+          output: c.output,
+          divider: i === 0 ? "none" : "1px solid #e7e3dc",
+          isOpen: self.state.openCmd === i,
+          chevron: self.state.openCmd === i ? "rotate(90deg)" : "rotate(0deg)",
+          pick: function () { self.setState({ openCmd: self.state.openCmd === i ? null : i }); }
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

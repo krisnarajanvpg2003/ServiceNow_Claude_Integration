@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.5; }
+    a { color: #b33a0c; } a:hover { color: #8f2e09; }
+    .mono { font-family: ui-monospace, 'Cascadia Mono', Consolas, 'Liberation Mono', monospace; font-size: 12px; }
+    .hit { cursor: pointer; user-select: none; }
+    .menu-item:hover { background: #fffdf6; }
+    .plus:hover { background: #f1eee9; border-color: #c9c3b8; }
+    .chip-x:hover { background: #e7e3dc; }
+  </style>
+</helmet>
+
+<div style="background: #faf8f4; padding: 26px 28px 34px; min-height: 100%; box-sizing: border-box;">
+
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+    <span style="display: inline-block; padding: 3px 9px; border-radius: 999px; background: #e6f5ee; color: #1e7a54; border: 1px solid #a9dcc4; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;">Proposed</span>
+    <span style="color: #6b6660; font-size: 13px;">click the + to open the menu</span>
+  </div>
+
+  <div style="max-width: 780px; margin: 0 auto; position: relative;">
+
+    <!-- the menu, anchored above the + -->
+    <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ true }}">
+      <div style="position: absolute; left: 0; bottom: 100%; margin-bottom: 10px; width: 268px; background: #ffffff; border: 1px solid #e7e3dc; border-radius: 12px; box-shadow: 0 10px 28px rgba(31,31,31,0.13); padding: 6px; z-index: 5;">
+        <div class="menu-item hit" onClick="{{ attach }}" style="display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; transition: background 0.12s ease;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex: none;">
+            <path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path>
+          </svg>
+          <div style="min-width: 0;">
+            <div style="font-size: 14px;">Upload from computer</div>
+            <div style="font-size: 11.5px; color: #6b6660;">Images, CSV, PDF, text</div>
+          </div>
+        </div>
+        <div class="menu-item hit" onClick="{{ attach }}" style="display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; transition: background 0.12s ease;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex: none;">
+            <rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M8 10h8"></path><path d="M8 14h5"></path>
+          </svg>
+          <div style="min-width: 0;">
+            <div style="font-size: 14px;">Attach a saved dataset</div>
+            <div style="font-size: 11.5px; color: #6b6660;">From datasets/</div>
+          </div>
+        </div>
+        <div class="menu-item hit" onClick="{{ attach }}" style="display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 8px; transition: background 0.12s ease;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex: none;">
+            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path>
+          </svg>
+          <div style="min-width: 0;">
+            <div style="font-size: 14px;">Attach an export</div>
+            <div style="font-size: 11.5px; color: #6b6660;">A PDF or Excel file you already made</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- the composer -->
+    <div style="background: #fdfcfa; border: 1px solid {{ frameColor }}; border-radius: 26px; padding: 10px 10px 8px; box-shadow: 0 6px 18px rgba(31,31,31,0.05);">
+
+      <!-- attachments sit above the text, inside the frame -->
+      <sc-if value="{{ hasFiles }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; padding: 2px 8px 10px;">
+
+          <div style="display: flex; align-items: center; gap: 9px; padding: 6px 8px 6px 6px; border: 1px solid #e7e3dc; border-radius: 10px; background: #ffffff;">
+            <div style="flex: none; width: 34px; height: 34px; border-radius: 7px; background: #f1eee9; border: 1px solid #e7e3dc; display: grid; place-items: center; overflow: hidden;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b6660" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="8.5" cy="9.5" r="1.5"></circle><path d="m21 16-5-5L5 20"></path>
+              </svg>
+            </div>
+            <div style="min-width: 0;">
+              <div style="font-size: 12.5px; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">incident-form.png</div>
+              <div style="font-size: 11px; color: #6b6660;">PNG &middot; 84 KB</div>
+            </div>
+            <div class="chip-x hit" style="flex: none; width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center; transition: background 0.12s ease;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b6660" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 9px; padding: 6px 8px 6px 6px; border: 1px solid #e7e3dc; border-radius: 10px; background: #ffffff;">
+            <div style="flex: none; width: 34px; height: 34px; border-radius: 7px; background: #e6f5ee; border: 1px solid #a9dcc4; display: grid; place-items: center;">
+              <span style="font-size: 9.5px; font-weight: 700; color: #1e7a54; letter-spacing: 0.03em;">XLSX</span>
+            </div>
+            <div style="min-width: 0;">
+              <div style="font-size: 12.5px; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">servicenow-users.xlsx</div>
+              <div style="font-size: 11px; color: #6b6660;">Excel &middot; 25 KB</div>
+            </div>
+            <div class="chip-x hit" style="flex: none; width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center; transition: background 0.12s ease;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b6660" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </div>
+          </div>
+
+        </div>
+      </sc-if>
+
+      <div style="padding: 0 10px 6px;">
+        <div style="color: #6b6660; padding: 5px 0;">{{ placeholder }}</div>
+      </div>
+
+      <!-- the control row -->
+      <div style="display: flex; align-items: center; gap: 8px; padding: 2px 2px 0;">
+
+        <div class="plus hit" onClick="{{ toggleMenu }}" style="flex: none; width: 32px; height: 32px; border-radius: 9px; border: 1px solid #e7e3dc; background: {{ plusBg }}; display: grid; place-items: center; transition: background 0.12s ease, border-color 0.12s ease;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" stroke-width="2" stroke-linecap="round" style="transform: {{ plusRotate }}; transition: transform 0.15s ease;">
+            <path d="M12 5v14"></path><path d="M5 12h14"></path>
+          </svg>
+        </div>
+
+        <div style="flex: none; display: flex; align-items: center; gap: 7px; height: 32px; padding: 0 11px; border-radius: 9px; border: 1px solid #e7e3dc; background: #ffffff;">
+          <span style="width: 7px; height: 7px; border-radius: 50%; background: #1e7a54;"></span>
+          <span style="font-size: 12.5px; color: #1f1f1f;">Claude</span>
+        </div>
+
+        <div style="flex: none; display: flex; align-items: center; height: 32px; padding: 0 11px; border-radius: 9px; background: #f1eee9; color: #6b6660; font-size: 12.5px;">Writes on</div>
+
+        <div style="flex: 1;"></div>
+
+        <div style="flex: none; width: 38px; height: 38px; border-radius: 50%; background: #ffc800; display: grid; place-items: center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: center; color: #6b6660; font-size: 11.5px; margin-top: 9px;">Drop a file anywhere on the conversation to attach it</div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"attachments":{"editor":"boolean","default":true,"section":"State"},"menu":{"editor":"boolean","default":true,"section":"State"}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { menu: null, files: null };
+  }
+
+  renderVals() {
+    var menuOpen = this.state.menu === null ? (this.props.menu ?? true) : this.state.menu;
+    var hasFiles = this.state.files === null ? (this.props.attachments ?? true) : this.state.files;
+    var self = this;
+
+    return {
+      menuOpen: menuOpen,
+      hasFiles: hasFiles,
+      placeholder: hasFiles
+        ? "What should I do with these?"
+        : "Ask about incidents, catalog items, groups or users…",
+      frameColor: menuOpen ? "#ffc800" : "#e7e3dc",
+      plusBg: menuOpen ? "#fff9e3" : "#ffffff",
+      plusRotate: menuOpen ? "rotate(45deg)" : "rotate(0deg)",
+      toggleMenu: function () { self.setState({ menu: !menuOpen }); },
+      attach: function () { self.setState({ menu: false, files: true }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

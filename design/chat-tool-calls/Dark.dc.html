@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.5; }
+    a { color: #ffc800; } a:hover { color: #ffd84d; }
+    .mono { font-family: ui-monospace, 'Cascadia Mono', Consolas, 'Liberation Mono', monospace; font-size: 12.5px; }
+    .clip { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  </style>
+</helmet>
+
+<div style="background: #1f1f1f; padding: 26px 28px 34px; min-height: 100%; box-sizing: border-box; color: #f2efe9;">
+
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+    <span style="display: inline-block; padding: 3px 9px; border-radius: 999px; background: #33301f; color: #ffc800; border: 1px solid rgba(255,200,0,0.35); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;">Dark mode</span>
+    <span style="color: #b9b4ac; font-size: 13px;">both states, same tokens</span>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+
+    <div>
+      <div style="color: #b9b4ac; font-size: 12px; margin-bottom: 8px;">Collapsed</div>
+      <div style="display: flex; align-items: center; gap: 9px; align-self: flex-start; width: fit-content; padding: 7px 12px 7px 10px; border: 1px solid #3a3a3a; border-radius: 10px; background: #262626;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b9b4ac" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 6 4 12l4 6"></path><path d="m16 6 4 6-4 6"></path>
+        </svg>
+        <span style="font-size: 13.5px;">Ran 5 commands</span>
+        <span style="padding: 1px 7px; border-radius: 999px; background: rgba(179,58,12,0.28); color: #ff9c73; border: 1px solid rgba(255,156,115,0.35); font-size: 11px; font-weight: 600;">2 failed</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b9b4ac" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;">
+          <path d="m9 6 6 6-6 6"></path>
+        </svg>
+      </div>
+    </div>
+
+    <div>
+      <div style="color: #b9b4ac; font-size: 12px; margin-bottom: 8px;">Expanded, with one command's output open</div>
+      <div style="border: 1px solid #3a3a3a; border-radius: 10px; background: #262626; overflow: hidden;">
+
+        <div style="display: flex; align-items: center; gap: 9px; padding: 8px 12px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7bd8a8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><path d="M20 6 9 17l-5-5"></path></svg>
+          <span style="flex: none; font-size: 13px; font-weight: 600;">fields</span>
+          <span class="mono clip" style="flex: 1; min-width: 0; color: #b9b4ac;">sys_script</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b6660" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><path d="m9 6 6 6-6 6"></path></svg>
+        </div>
+
+        <div style="border-top: 1px solid #3a3a3a; display: flex; align-items: center; gap: 9px; padding: 8px 12px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff9c73" stroke-width="2.6" stroke-linecap="round" style="flex: none;"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+          <span style="flex: none; font-size: 13px; font-weight: 600;">create</span>
+          <span class="mono clip" style="flex: 1; min-width: 0; color: #b9b4ac;">sys_script -d name="Set incident In Progress after 1 minute" -d collection=incident | head -60</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b6660" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; transform: rotate(90deg);"><path d="m9 6 6 6-6 6"></path></svg>
+        </div>
+        <div style="padding: 0 12px 12px 37px;">
+          <pre class="mono" style="margin: 0; padding: 9px 11px; background: #0f0f0f; border: 1px solid #3a3a3a; border-radius: 8px; line-height: 1.5; white-space: pre-wrap; color: #f2efe9;">Chained or redirected commands are not allowed. Run one snow.py command.</pre>
+        </div>
+
+        <div style="border-top: 1px solid #3a3a3a; display: flex; align-items: center; gap: 9px; padding: 8px 12px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7bd8a8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><path d="M20 6 9 17l-5-5"></path></svg>
+          <span style="flex: none; font-size: 13px; font-weight: 600;">create</span>
+          <span class="mono clip" style="flex: 1; min-width: 0; color: #b9b4ac;">sys_script -d name="Set incident In Progress after 1 minute" -d when=after -d order=100 -d script="..."</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b6660" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><path d="m9 6 6 6-6 6"></path></svg>
+        </div>
+
+      </div>
+    </div>
+
+    <div>
+      <div style="color: #b9b4ac; font-size: 12px; margin-bottom: 8px;">While it is still working</div>
+      <div style="display: flex; align-items: center; gap: 9px; width: fit-content; padding: 7px 12px 7px 10px; border: 1px solid #3a3a3a; border-radius: 10px; background: #262626;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f5c14b" stroke-width="2.4" stroke-linecap="round">
+          <path d="M12 3a9 9 0 1 0 9 9"></path>
+        </svg>
+        <span style="font-size: 13.5px;">Running snow.py create sys_script</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b9b4ac" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><path d="m9 6 6 6-6 6"></path></svg>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
